@@ -8,4 +8,3 @@ debug:  ; $(CC) $(CXXFLAGS) -o app -g Catacombs.cpp olcPixelGameEngine.cpp
 
 
 log:  ; $(CC) $(CXXFLAGS) 2> error.txt -o app Catacombs.cpp olcPixelGameEngine.cpp
-
