@@ -1,3 +1,5 @@
+#include <iostream>
+#include <vector>
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_TransformedView.h"
 
@@ -18,19 +20,28 @@ class Catacombs : public olc::PixelGameEngine
             olc::vf2d vPos;
             olc::vf2d vVel;
             float fRadius = 0.5f;
-            olc::vf2d vSpriteSize = { 16.0f, 22.0f };
-            olc::vf2d vSpritePos = { 11.0f, 10.0f };
         };
 
         struct sPlayer : public sWorldObject
         {
             olc::Sprite* pPlayerSprite = nullptr;
             olc::Decal* pPlayerDecal = nullptr;
+
+            olc::vf2d vSpriteSize = { 16.0f, 22.0f };
+
+            std::vector<olc::vf2d> vSpriteStartPos;
+
+            olc::vf2d vSpriteCurrentPos;
+            const int iSpriteStartFrameWalking = 0;
+            const int iSpriteEndFrameWalking = 5;
+            int iSpriteCurrentCol;
+            int iSpriteCurrentRow;
         };
 
 
 
         sPlayer sHero;
+        int iGameTick;
 
         // Reachgoal - Procedural World Generation
         std::string sWorldMap =
@@ -74,7 +85,13 @@ class Catacombs : public olc::PixelGameEngine
     public:
         bool OnUserCreate() override
         {
+            iGameTick = 0;
             tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 32, 32});
+            sHero.vSpriteStartPos.push_back({ 11.0f, 10.0f });
+            sHero.vSpriteStartPos.push_back({ 11.0f, 41.0f });
+            sHero.iSpriteCurrentCol = 0;
+            sHero.iSpriteCurrentRow = 1;
+            sHero.vSpriteCurrentPos = sHero.vSpriteStartPos[1];
             sHero.vPos = { 1.5f, 1.5f };
             sHero.pPlayerSprite = new olc::Sprite("./res/sprites/ForestBoy_alpha.png");
             sHero.pPlayerDecal = new olc::Decal(sHero.pPlayerSprite);
@@ -88,9 +105,28 @@ class Catacombs : public olc::PixelGameEngine
 
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
+            UpdateEntities();
             Render();
 
+            iGameTick++;
+
             return true;
+        }
+
+
+        /*************************************************/
+        /*                Update Entities                */
+        /*************************************************/
+        void UpdateEntities()
+        {
+            if (iGameTick >= 5)
+            {
+                if (++sHero.iSpriteCurrentCol > sHero.iSpriteEndFrameWalking) sHero.iSpriteCurrentCol = 0;
+                iGameTick = 0;
+            }
+
+            sHero.vSpriteCurrentPos = { sHero.vSpriteStartPos[1].x + sHero.iSpriteCurrentCol * sHero.vSpriteSize.x,
+                                        sHero.vSpriteStartPos[1].y };
         }
 
 
@@ -121,9 +157,9 @@ class Catacombs : public olc::PixelGameEngine
             }
 
             // Draw Player
-            tv.DrawCircle(sHero.vPos, 0.5f, olc::WHITE);
+//            tv.DrawCircle(sHero.vPos, 0.5f, olc::WHITE);
             tv.DrawPartialDecal({ sHero.vPos.x  - 0.5f, sHero.vPos.y - 0.8f }, sHero.pPlayerDecal,
-                    sHero.vSpritePos, sHero.vSpriteSize, { 2.0f, 2.0f });
+                    sHero.vSpriteCurrentPos, sHero.vSpriteSize, { 2.0f, 2.0f });
         }
 
 
