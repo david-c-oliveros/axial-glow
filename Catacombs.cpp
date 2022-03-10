@@ -24,18 +24,17 @@ class Catacombs : public olc::PixelGameEngine
 
         World cWorld = World();
 
-        olc::vi2d vWorldSize = { 32, 32 };
         bool bDebug = false;
 
     public:
         bool OnUserCreate() override
         {
-            std::cout << "Map size: " << cWorld.sMap.length() << std::endl;
-            std::cout << cWorld.sMap << std::endl;
             iGameTick = 0;
             tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 32, 32 });
 
             cWorld.GenerateWorld();
+            std::cout << "Map size: " << cWorld.sMap.length() << std::endl;
+            std::cout << "Map: " << cWorld.sMap << std::endl;
             cPlayer.OnCreate();
             olc::vf2d spawn = cWorld.FindSpawnableCell();
             std::cout << "Player spawn: " << spawn << std::endl;
@@ -92,7 +91,7 @@ class Catacombs : public olc::PixelGameEngine
 
             // Draw World
             olc::vi2d vTopLeft = tv.GetTopLeftTile().max({ 0, 0 });
-            olc::vi2d vBottomRight = tv.GetBottomRightTile().min(vWorldSize);
+            olc::vi2d vBottomRight = tv.GetBottomRightTile().min(cWorld.GetSize());
             olc::vi2d vTile;
 
             int count = 0;
@@ -100,7 +99,7 @@ class Catacombs : public olc::PixelGameEngine
             {
                 for (vTile.x = vTopLeft.x; vTile.x < vBottomRight.x; vTile.x++)
                 {
-                    int index = vTile.y * vWorldSize.x + vTile.x;
+                    int index = vTile.y * cWorld.GetSize().x + vTile.x;
                     if (cWorld.sMap[index] == '#')
                     {
                         // TODO - Replace rectangles with sprites (decals)
@@ -159,7 +158,7 @@ class Catacombs : public olc::PixelGameEngine
             olc::vi2d vCurrentCell = cPlayer.GetPos().floor();
             olc::vi2d vTargetCell = vPotentialPosition;
             olc::vi2d vAreaTL = (vCurrentCell.min(vTargetCell) - olc::vi2d(1, 1)).max({ 0, 0});
-            olc::vi2d vAreaBR = (vCurrentCell.max(vTargetCell) + olc::vi2d(1, 1)).min(vWorldSize);
+            olc::vi2d vAreaBR = (vCurrentCell.max(vTargetCell) + olc::vi2d(1, 1)).min(cWorld.GetSize());
 
             // Iterate through each cell in potential collision region
             olc::vi2d vCell;
@@ -167,7 +166,7 @@ class Catacombs : public olc::PixelGameEngine
             {
                 for (vCell.x = vAreaTL.x; vCell.x <= vAreaBR.x; vCell.x++)
                 {
-                    if (cWorld.sMap[vCell.y * vWorldSize.x + vCell.x] == '#')
+                    if (cWorld.sMap[vCell.y * cWorld.GetSize().x + vCell.x] == '#')
                     {
                         // If the region contains a solid cell,
                         // find the nearest point on that cell to the circle

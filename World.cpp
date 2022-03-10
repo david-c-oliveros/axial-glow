@@ -77,28 +77,26 @@ void World::GenerateWorld()
         "################################################################"
         "################################################################";
 
+    vSize = { 64, 64 };
+
     olc::vf2d center = { 32.0f, 32.0f };
     int radius = 32.0f;
     int total = 800;
     for (int i = 0; i < total; i++)
     {
-        std::cout << "sqrt: " << (int)sqrt(sMap.length()) << std::endl;
         olc::vf2d cartCoords = procgen::GetRandomPointInCircle(radius, center);
-        std::cout << "random: " << cartCoords << std::endl;
         int index = (int)cartCoords.y * (int)sqrt(sMap.length()) + (int)cartCoords.x;
-        std::cout << "i: " << i << std::endl;
-        std::cout << "index: " << index << std::endl;
         sMap.replace((int)index, 1, ".");
     }
 }
 
 void World::PrintWorld()
 {
-    for (int i = 0; i < 64; i++)
+    for (int i = 0; i < vSize.x; i++)
     {
-        for (int j = 0; j < 64; j++)
+        for (int j = 0; j < vSize.y; j++)
         {
-            std::cout << sMap[i * 64 + j];
+            std::cout << sMap[i * vSize.x + j];
         }
         std::cout << std::endl;
     }
@@ -108,11 +106,11 @@ void World::PrintWorld()
 // TODO - Make better (right now just loops through string and finds the first emtpy cell)
 olc::vf2d World::FindSpawnableCell()
 {
-    for (int i = 0; i < 64; i++)
+    for (int i = 0; i < vSize.x; i++)
     {
-        for (int j = 0; j < 64; j++)
+        for (int j = 0; j < vSize.y; j++)
         {
-            std::cout << sMap[i * 64 + j];
+            std::cout << sMap[i * vSize.x + j];
             if (sMap[i * 64 + j] == '.')
             {
                 std::cout << "i, j: " << i << ", " << j << std::endl;
@@ -120,4 +118,10 @@ olc::vf2d World::FindSpawnableCell()
             }
         }
     }
+}
+
+
+olc::vi2d World::GetSize()
+{
+    return vSize;
 }
