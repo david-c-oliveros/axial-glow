@@ -1,0 +1,3 @@
+CC = g++
+CXXFLAGS = -lX11 -lGL -lpthread -lpng -lstdc++fs -std=c++17 -Wfatal-errors -w
+app: ProcGen.cpp  ; $(CC) $(CXXFLAGS) -o proc ProcGen.cpp olcPixelGameEngine.cpp

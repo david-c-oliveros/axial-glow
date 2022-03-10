@@ -28,3 +28,8 @@ void Entity::SetVel(olc::vf2d vVel)
 {
     m_vVel = vVel;
 }
+
+void Entity::AddVel(olc::vf2d vVel)
+{
+    m_vVel = m_vVel + vVel;
+}

@@ -21,4 +21,5 @@ class Entity
 
         void SetPos(olc::vf2d vPos);
         void SetVel(olc::vf2d vVel);
+        void AddVel(olc::vf2d vVel);
 };
