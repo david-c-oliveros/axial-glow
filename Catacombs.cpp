@@ -34,7 +34,7 @@ class Catacombs : public olc::PixelGameEngine
 
             cWorld.GenerateWorld();
             std::cout << "Map size: " << cWorld.sMap.length() << std::endl;
-            std::cout << "Map: " << cWorld.sMap << std::endl;
+            std::cout << "Last element: " << cWorld.sMap[cWorld.sMap.length() - 1] << std::endl;
             cPlayer.OnCreate();
             olc::vf2d spawn = cWorld.FindSpawnableCell();
             std::cout << "Player spawn: " << spawn << std::endl;
