@@ -74,12 +74,7 @@ class Catacombs : public olc::PixelGameEngine
         /****************************************/
         void RenderDebug()
         {
-            std::string sPlayerPos = "Position: " + std::to_string(cPlayer.GetPos().x) + ", " + std::to_string(cPlayer.GetPos().y);
-            std::string sPlayerVel = "Velocity: " + std::to_string(cPlayer.GetVel().x) + ", " + std::to_string(cPlayer.GetVel().y);
-            olc::vf2d str_vPos = { 5.0f, 5.0f };
-            olc::vf2d str_pPos = { 5.0f, 15.0f };
-            DrawStringDecal(str_pPos, sPlayerPos);
-            DrawStringDecal(str_vPos, sPlayerVel);
+            cPlayer.DrawDebug(this);
         }
 
 
@@ -121,10 +116,12 @@ class Catacombs : public olc::PixelGameEngine
             cPlayer.SetVel({ 0.0f, 0.0f });
             if (GetKey(olc::Key::W).bHeld)
             {
+                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
                 cPlayer.AddVel({  0.0f, -1.0f });
             }
             if (GetKey(olc::Key::S).bHeld)
             {
+                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
                 cPlayer.AddVel({  0.0f,  1.0f });
             }
             if (GetKey(olc::Key::A).bHeld)

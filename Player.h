@@ -5,8 +5,7 @@
 #define PLAYER_REST         0
 #define PLAYER_WALK_LEFT    1
 #define PLAYER_WALK_RIGHT   2
-#define PLAYER_RUN_LEFT     3
-#define PLAYER_RUN_RIGHT    4
+#define PLAYER_WALK_UP_DOWN 3
 
 
 class Player : public Entity
@@ -43,4 +42,5 @@ class Player : public Entity
         void DrawSelf(olc::TileTransformedView* tv);
 
         int State();
+        void DrawDebug(olc::PixelGameEngine* pge);
 };

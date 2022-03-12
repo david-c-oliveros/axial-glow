@@ -80,6 +80,14 @@
                                             m_vSpriteStartPos[1].y };
                     break;
 
+                case(PLAYER_WALK_UP_DOWN):
+                    m_iSpriteStartFrame = 0;
+                    m_iSpriteEndFrame = 5;
+//                    m_iSpriteDir = 1;
+                    m_vSpriteCurrentPos = { m_vSpriteStartPos[1].x + m_iSpriteCurrentCol * m_vSpriteSize.x,
+                                            m_vSpriteStartPos[1].y };
+                    break;
+
                 default:
                     if (m_iSpriteDir == 0)
                     {
@@ -116,4 +124,21 @@ void Player::DrawSelf(olc::TileTransformedView* tv)
 int Player::State()
 {
     return m_iPlayerState;
+}
+
+
+void Player::DrawDebug(olc::PixelGameEngine* pge)
+{
+    std::string sPlayerPos = "Position: " + std::to_string(m_vPos.x) + ", " + std::to_string(m_vPos.y);
+    std::string sPlayerVel = "Velocity: " + std::to_string(m_vVel.x) + ", " + std::to_string(m_vVel.y);
+    std::string sPlayerState = "State: " + std::to_string(m_iPlayerState);
+    std::string sPlayerSprint = "Sprint: " + std::to_string(m_bSprint);
+    olc::vf2d str_velocityPos = { 5.0f, 5.0f };
+    olc::vf2d str_positionPos = { 5.0f, 15.0f };
+    olc::vf2d str_statePos = { 5.0f, 25.0f };
+    olc::vf2d str_sprintPos = { 5.0f, 35.0f };
+    pge->DrawStringDecal(str_positionPos, sPlayerPos);
+    pge->DrawStringDecal(str_velocityPos, sPlayerVel);
+    pge->DrawStringDecal(str_statePos, sPlayerState);
+    pge->DrawStringDecal(str_sprintPos, sPlayerSprint);
 }
