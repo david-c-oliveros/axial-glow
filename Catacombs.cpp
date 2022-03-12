@@ -81,29 +81,8 @@ class Catacombs : public olc::PixelGameEngine
         void Render()
         {
 
-            // Clear World
             Clear(olc::VERY_DARK_BLUE);
-
-            // Draw World
-            olc::vi2d vTopLeft = tv.GetTopLeftTile().max({ 0, 0 });
-            olc::vi2d vBottomRight = tv.GetBottomRightTile().min(cWorld.GetSize());
-            olc::vi2d vTile;
-
-            int count = 0;
-            for (vTile.y = vTopLeft.y; vTile.y < vBottomRight.y; vTile.y++)
-            {
-                for (vTile.x = vTopLeft.x; vTile.x < vBottomRight.x; vTile.x++)
-                {
-                    int index = vTile.y * cWorld.GetSize().x + vTile.x;
-                    if (cWorld.sMap[index] == '#')
-                    {
-                        // TODO - Replace rectangles with sprites (decals)
-                        tv.DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
-                    }
-                }
-            }
-
-            // Draw Player
+            cWorld.DrawMap(&tv);
             cPlayer.DrawSelf(&tv);
         }
 
