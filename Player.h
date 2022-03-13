@@ -39,7 +39,7 @@ class Player : public Entity
 
         bool Update(int iGameTick);
         void SetState(int iState);
-        void DrawSelf(olc::TileTransformedView* tv);
+        void DrawSelf(olc::TileTransformedView* tv) override;
 
         int State();
         void DrawDebug(olc::PixelGameEngine* pge);

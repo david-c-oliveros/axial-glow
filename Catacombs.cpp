@@ -5,6 +5,7 @@
 #include "World.h"
 #include "Entity.h"
 #include "Player.h"
+#include "Loot.h"
 
 
 class Catacombs : public olc::PixelGameEngine
@@ -23,6 +24,7 @@ class Catacombs : public olc::PixelGameEngine
         int iGameTick;
 
         World cWorld = World();
+        std::vector<std::unique_ptr<Entity>> vEntities;
 
         bool bDebug = false;
 
@@ -33,6 +35,7 @@ class Catacombs : public olc::PixelGameEngine
             tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 32, 32 });
 
             cWorld.GenerateWorld();
+            GenerateEntities();
             std::cout << "Map size: " << cWorld.sMap.length() << std::endl;
             std::cout << "Last element: " << cWorld.sMap[cWorld.sMap.length() - 1] << std::endl;
             cPlayer.OnCreate();
@@ -80,10 +83,13 @@ class Catacombs : public olc::PixelGameEngine
 
         void Render()
         {
-
             Clear(olc::VERY_DARK_BLUE);
             cWorld.DrawMap(&tv);
             cPlayer.DrawSelf(&tv);
+            for (int i = 0; i < vEntities.size(); i++)
+            {
+                vEntities[i]->DrawSelf(&tv);
+            }
         }
 
 
@@ -191,6 +197,18 @@ class Catacombs : public olc::PixelGameEngine
 
             if (GetMouseWheel() > 0) tv.ZoomAtScreenPos(2.0f, GetMousePos());
             if (GetMouseWheel() < 0) tv.ZoomAtScreenPos(0.5f, GetMousePos());
+        }
+
+
+        void GenerateEntities()
+        {
+            for(int i = 0; i < 20; i++)
+            {
+                olc::vf2d vec = { i, i };
+                std::unique_ptr<Loot> loot = std::make_unique<Loot>(vec);
+                loot->OnCreate();
+                vEntities.push_back(std::move(loot));
+            }
         }
 };
 
