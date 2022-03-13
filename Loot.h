@@ -9,6 +9,9 @@ class Loot : public Entity
 {
     private:
         int m_iValue;
+        int m_iAnimFrame;
+        int m_iAnimLen;
+        bool m_bIncrease;
         olc::vf2d m_vSpriteSize;
         olc::vf2d m_vSpritePos;
         std::unique_ptr<olc::Renderable> m_pLootSprite;
@@ -18,5 +21,6 @@ class Loot : public Entity
         ~Loot();
 
         void OnCreate();
+        void Update();
         void DrawSelf(olc::TileTransformedView* tv);
 };

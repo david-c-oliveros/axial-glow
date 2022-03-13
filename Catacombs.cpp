@@ -67,7 +67,15 @@ class Catacombs : public olc::PixelGameEngine
         /*************************************************/
         void UpdateEntities()
         {
-            if (cPlayer.Update(iGameTick)) iGameTick = 0;
+            std::cout << "Tick: " << iGameTick << std::endl;
+            cPlayer.Update(iGameTick);
+            if (iGameTick % 5 ==0)
+            {
+                for (int i = 0; i < vEntities.size(); i++)
+                {
+                    vEntities[i]->Update();
+                }
+            }
         }
 
 
@@ -204,6 +212,7 @@ class Catacombs : public olc::PixelGameEngine
             for(int i = 0; i < 20; i++)
             {
                 olc::vf2d vec = cWorld.FindRandomOpenSpot();
+                vec = { vec.x + 0.5f, vec.y + 0.5f };
                 std::unique_ptr<Loot> loot = std::make_unique<Loot>(vec);
                 loot->OnCreate();
                 vEntities.push_back(std::move(loot));

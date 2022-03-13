@@ -33,7 +33,7 @@ bool Player::Update(int iGameTick)
 {
     m_iAnimInterval = m_bSprint ? 3 : 5;
 
-    if (iGameTick >= m_iAnimInterval)
+    if (iGameTick % m_iAnimInterval == 0)
     {
         /******************************************************/
         /*       Ensure the animation runs currect way        */

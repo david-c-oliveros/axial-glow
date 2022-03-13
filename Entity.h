@@ -24,5 +24,6 @@ class Entity
         void SetVel(olc::vf2d vVel);
         void AddVel(olc::vf2d vVel);
 
+        virtual void Update() {};
         virtual void DrawSelf(olc::TileTransformedView* tv) = 0;
 };
