@@ -160,3 +160,19 @@ void World::DrawMap(olc::TileTransformedView* tv)
         }
     }
 }
+
+
+olc::vf2d World::FindRandomOpenSpot()
+{
+    auto ti = std::chrono::system_clock::now().time_since_epoch().count();
+    srand(ti);
+    olc::vf2d randCoord = { (int)rand() % vSize.x, (int)rand() % vSize.y };
+    int index = randCoord.y * vSize.x + randCoord.x;
+    while (index < sMap.length() && sMap[index] == '#')
+    {
+        randCoord = { rand() % vSize.x, rand() % vSize.y };
+        index = randCoord.y * vSize.x + randCoord.x;
+    }
+
+    return randCoord;
+}

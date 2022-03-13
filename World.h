@@ -20,4 +20,5 @@ class World
         olc::vf2d FindSpawnableCell();
         olc::vi2d GetSize();
         void DrawMap(olc::TileTransformedView* tv);
+        olc::vf2d FindRandomOpenSpot();
 };

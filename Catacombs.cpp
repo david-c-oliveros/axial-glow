@@ -19,7 +19,6 @@ class Catacombs : public olc::PixelGameEngine
     private:
         olc::TileTransformedView tv;
 
-
         Player cPlayer = Player({ 1.5f, 1.5f });
         int iGameTick;
 
@@ -204,7 +203,7 @@ class Catacombs : public olc::PixelGameEngine
         {
             for(int i = 0; i < 20; i++)
             {
-                olc::vf2d vec = { i, i };
+                olc::vf2d vec = cWorld.FindRandomOpenSpot();
                 std::unique_ptr<Loot> loot = std::make_unique<Loot>(vec);
                 loot->OnCreate();
                 vEntities.push_back(std::move(loot));
