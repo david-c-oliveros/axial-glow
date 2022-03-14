@@ -6,6 +6,7 @@
 #include "Entity.h"
 #include "Player.h"
 #include "Loot.h"
+#include "Counter.h"
 
 
 class Catacombs : public olc::PixelGameEngine
@@ -24,6 +25,7 @@ class Catacombs : public olc::PixelGameEngine
 
         World cWorld = World();
         std::vector<std::unique_ptr<Entity>> vEntities;
+        Counter cTickCounterEntity = Counter(5);
 
         bool bDebug = false;
 
@@ -35,12 +37,13 @@ class Catacombs : public olc::PixelGameEngine
 
             cWorld.GenerateWorld();
             GenerateEntities();
-            std::cout << "Map size: " << cWorld.sMap.length() << std::endl;
-            std::cout << "Last element: " << cWorld.sMap[cWorld.sMap.length() - 1] << std::endl;
+
             cPlayer.OnCreate();
+            cTickCounterEntity.Start();
+
             olc::vf2d spawn = cWorld.FindSpawnableCell();
-            std::cout << "Player spawn: " << spawn << std::endl;
             cPlayer.SetPos(spawn);
+
             cWorld.PrintWorld();
 
             return true;
@@ -67,10 +70,12 @@ class Catacombs : public olc::PixelGameEngine
         /*************************************************/
         void UpdateEntities()
         {
-            std::cout << "Tick: " << iGameTick << std::endl;
             cPlayer.Update(iGameTick);
-            if (iGameTick % 5 ==0)
+            cTickCounterEntity.Update();
+            if (cTickCounterEntity.Check())
             {
+                cTickCounterEntity.Reset();
+                cTickCounterEntity.Start();
                 for (int i = 0; i < vEntities.size(); i++)
                 {
                     vEntities[i]->Update();
