@@ -25,6 +25,8 @@ class Player : public Entity
         int m_iPlayerState;
         int m_iAnimInterval;
 
+        olc::vf2d m_vMoveVel;
+
         int m_iCoin;
 
     public:
@@ -36,11 +38,16 @@ class Player : public Entity
 
         void OnCreate();
         bool Update(int iGameTick);
+        int GetState();
         void SetState(int iState);
         void DrawSelf(olc::TileTransformedView* tv) override;
-        int State();
         void DrawDebug(olc::PixelGameEngine* pge);
         void DrawStats(olc::PixelGameEngine* pge);
 
-        void AddCoin(int coin);
+        void AddCoin(int iCoin);
+        olc::vf2d GetVel();
+        olc::vf2d GetMoveVel();
+        void SetMoveVel(olc::vf2d vVel);
+        void AddMoveVel(olc::vf2d vVel);
+        void Jump();
 };

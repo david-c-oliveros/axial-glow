@@ -27,12 +27,15 @@ class Catacombs : public olc::PixelGameEngine
 
         Player cPlayer = Player({ 1.5f, 1.5f });
         int iGameTick;
+        bool bDebug = false;
 
         World cWorld = World();
         std::vector<std::unique_ptr<Entity>> vEntities;
         Counter cTickCounterEntity = Counter(5);
 
-        bool bDebug = false;
+        //const olc::vf2d vGravityVec = { 0.0f, 9.8f };
+        const olc::vf2d vGravityVec = { 0.0f, 1.0f };
+
 
     public:
         bool OnUserCreate() override
@@ -56,7 +59,7 @@ class Catacombs : public olc::PixelGameEngine
 
         bool OnUserUpdate(float fElapsedTime) override
         {
-            if (GetKey(olc::Key::SPACE).bReleased) bDebug = !bDebug;
+            if (GetKey(olc::Key::M).bReleased) bDebug = !bDebug;
 
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
@@ -117,46 +120,62 @@ class Catacombs : public olc::PixelGameEngine
             cPlayer.SetState(PLAYER_REST);
 
             // Player Control
-            cPlayer.SetVel({ 0.0f, 0.0f });
-            if (GetKey(olc::Key::W).bHeld)
-            {
-                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-                cPlayer.AddVel({  0.0f, -1.0f });
-            }
-            if (GetKey(olc::Key::S).bHeld)
-            {
-                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-                cPlayer.AddVel({  0.0f,  1.0f });
-            }
+            cPlayer.SetMoveVel({ 0.0f, 0.0f });
+//            if (GetKey(olc::Key::W).bHeld)
+//            {
+//                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
+//                cPlayer.AddMoveVel({  0.0f, -1.0f });
+//            }
+//            if (GetKey(olc::Key::S).bHeld)
+//            {
+//                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
+//                cPlayer.AddMoveVel({  0.0f,  1.0f });
+//            }
             if (GetKey(olc::Key::A).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_LEFT);
-                cPlayer.AddVel({ -1.0f,  0.0f });
+                cPlayer.AddMoveVel({ -1.0f,  0.0f });
             }
             if (GetKey(olc::Key::D).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_RIGHT);
-                cPlayer.AddVel({  1.0f,  0.0f });
+                cPlayer.AddMoveVel({  1.0f,  0.0f });
             }
-            if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.State() != PLAYER_REST)
+            if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != PLAYER_REST)
             {
                 cPlayer.m_bSprint = true;
             }
             else
                 cPlayer.m_bSprint = false;
-
             // Normalize velocity vector
-            if (cPlayer.GetVel().mag2() > 0)
-            {
-                const int iVelMul = (cPlayer.m_bSprint ? 7.0f : 4.0f);
-                cPlayer.SetVel(cPlayer.GetVel().norm() * iVelMul);
+//            if (cPlayer.GetMoveVel().mag2() > 0)
+//            {
+//                const int iVelMul = (cPlayer.m_bSprint ? 7.0f : 4.0f);
+//                cPlayer.SetMoveVel(cPlayer.GetMoveVel().norm() * iVelMul);
+//
+//                // TODO - Player stamina drain
+//            }
 
-                // TODO - Player stamina drain
+            const int iVelMul = (cPlayer.m_bSprint ? 7.0f : 4.0f);
+            cPlayer.SetMoveVel(cPlayer.GetMoveVel() * iVelMul);
+
+            if (GetKey(olc::Key::SPACE).bPressed)
+            {
+                cPlayer.Jump();
             }
-            olc::vf2d vPotentialPosition = cPlayer.GetPos() + (cPlayer.GetVel() * fElapsedTime);
+
+            cPlayer.AddVel(vGravityVec);
+            olc::vf2d newPos = CheckForMapCollisions(&cPlayer, fElapsedTime);
+            cPlayer.SetPos(newPos);
+        }
+
+
+        olc::vf2d CheckForMapCollisions(Entity* entity, float fElapsedTime)
+        {
+            olc::vf2d vPotentialPosition = entity->GetPos() + (entity->GetVel() * fElapsedTime);
 
             // Extract potential collision region
-            olc::vi2d vCurrentCell = cPlayer.GetPos().floor();
+            olc::vi2d vCurrentCell = entity->GetPos().floor();
             olc::vi2d vTargetCell = vPotentialPosition;
             olc::vi2d vAreaTL = (vCurrentCell.min(vTargetCell) - olc::vi2d(1, 1)).max({ 0, 0});
             olc::vi2d vAreaBR = (vCurrentCell.max(vTargetCell) + olc::vi2d(1, 1)).min(cWorld.GetSize());
@@ -184,7 +203,7 @@ class Catacombs : public olc::PixelGameEngine
                         // TODO - FIX BUG HERE - If player is inside a solid square,
                         // then vRayToNearest.mag() returns {nan, nan}
 //                        if (vRayToNearest.x != 0.0f && vRayToNearest.y != 0.0f )
-                        float fOverlap = cPlayer.fColliderRadius - vRayToNearest.mag();
+                        float fOverlap = entity->fColliderRadius - vRayToNearest.mag();
 
                         // Handle divide-by-zero edge case
                         if  (std::isnan(fOverlap)) fOverlap = 0;
@@ -193,12 +212,12 @@ class Catacombs : public olc::PixelGameEngine
                         if (fOverlap > 0)
                         {
                             vPotentialPosition = vPotentialPosition - vRayToNearest.norm() * fOverlap;
+                            entity->SetVel({ 0.0f, 0.0f });
                         }
                     }
                 }
             }
-
-            cPlayer.SetPos(vPotentialPosition);
+            return vPotentialPosition;
         }
 
 
@@ -213,6 +232,7 @@ class Catacombs : public olc::PixelGameEngine
                 }
             }
         }
+
 
         void HandlePanAndZoom()
         {
