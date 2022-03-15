@@ -5,8 +5,13 @@
 #include "World.h"
 #include "Entity.h"
 #include "Player.h"
-#include "Loot.h"
 #include "Counter.h"
+#include "MathUtils.h"
+#include "Loot.h"
+
+
+float ReMap(float x, float fromMin, float fromMax, float toMin, float toMax);
+float DistanceBetweenPoints(olc::vf2d vecA, olc::vf2d vecB);
 
 
 class Catacombs : public olc::PixelGameEngine
@@ -56,6 +61,7 @@ class Catacombs : public olc::PixelGameEngine
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
             UpdateEntities();
+            CheckForEntityCollisions();
             Render();
             RenderDebug();
 
@@ -98,6 +104,7 @@ class Catacombs : public olc::PixelGameEngine
             Clear(olc::VERY_DARK_BLUE);
             cWorld.DrawMap(&tv);
             cPlayer.DrawSelf(&tv);
+            cPlayer.DrawStats(this);
             for (int i = 0; i < vEntities.size(); i++)
             {
                 vEntities[i]->DrawSelf(&tv);
@@ -192,6 +199,19 @@ class Catacombs : public olc::PixelGameEngine
             }
 
             cPlayer.SetPos(vPotentialPosition);
+        }
+
+
+        void CheckForEntityCollisions()
+        {
+            for (int i = vEntities.size() - 1; i >= 0; i--)
+            {
+                if (MathUtils::DistanceBetweenPoints(cPlayer.GetPos(), vEntities[i]->GetPos()) < 0.7f)
+                {
+                    cPlayer.AddCoin(vEntities[i]->GetValue());
+                    vEntities.erase(vEntities.begin() + i);
+                }
+            }
         }
 
         void HandlePanAndZoom()

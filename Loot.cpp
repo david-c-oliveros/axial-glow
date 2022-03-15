@@ -1,5 +1,4 @@
 #include "Loot.h"
-#include "MathUtils.h"
 
 
 Loot::Loot(olc::vf2d vPos)
@@ -19,6 +18,7 @@ void Loot::OnCreate()
     m_iAnimLen = 3;
     m_vSpriteSize = { 1.0f, 1.0f };
     m_bIncrease = true;
+    m_iValue = 5;
 }
 
 
@@ -36,12 +36,19 @@ void Loot::Update()
             m_bIncrease = true;
     }
 
-    m_vSpriteSize = { mathcustom::reMap(m_iAnimFrame, 1.0f, m_iAnimLen, 0.7f, 1.0f) * m_vSpriteSize.x,
-                      mathcustom::reMap(m_iAnimFrame, 1.0f, m_iAnimLen, 0.7f, 1.0f) * m_vSpriteSize.y };
+    m_vSpriteSize = { MathUtils::ReMap(m_iAnimFrame, 1.0f, m_iAnimLen, 0.7f, 1.0f) * m_vSpriteSize.x,
+                      MathUtils::ReMap(m_iAnimFrame, 1.0f, m_iAnimLen, 0.7f, 1.0f) * m_vSpriteSize.y };
 }
 
 
 void Loot::DrawSelf(olc::TileTransformedView* tv)
 {
-    tv->DrawPartialRotatedDecal(m_vPos, m_pLootSprite->Decal(), 0.0f, { 8.0f, 8.0f }, { 112.0f, 16.0f }, { 16.0f, 16.0f }, m_vSpriteSize);
+    tv->DrawPartialRotatedDecal(m_vPos, m_pLootSprite->Decal(), 0.0f, { 8.0f, 8.0f },
+                                { 112.0f, 16.0f }, { 16.0f, 16.0f }, m_vSpriteSize);
+}
+
+
+int Loot::GetValue()
+{
+    return m_iValue;
 }

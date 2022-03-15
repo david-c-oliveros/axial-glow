@@ -26,4 +26,5 @@ class Entity
 
         virtual void Update() {};
         virtual void DrawSelf(olc::TileTransformedView* tv) = 0;
+        virtual int GetValue() {};
 };

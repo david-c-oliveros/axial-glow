@@ -26,6 +26,8 @@ void Player::OnCreate()
     m_iSpriteDir = 1;
     m_iSpriteCurrentCol = 0;
     m_iPlayerState = PLAYER_REST;
+
+    m_iCoin = 0;
 }
 
 
@@ -146,4 +148,18 @@ void Player::DrawDebug(olc::PixelGameEngine* pge)
     pge->DrawStringDecal(str_velocityPos, sPlayerVel);
     pge->DrawStringDecal(str_statePos, sPlayerState);
     pge->DrawStringDecal(str_sprintPos, sPlayerSprint);
+}
+
+
+void Player::DrawStats(olc::PixelGameEngine* pge)
+{
+    std::string sCoin = "Coin: " + std::to_string(m_iCoin);
+    olc::vf2d str_pos = { 5.0f, pge->ScreenHeight() - 16.0f };
+    pge->DrawStringDecal(str_pos, sCoin);
+}
+
+
+void Player::AddCoin(int coin)
+{
+    m_iCoin += coin;
 }
