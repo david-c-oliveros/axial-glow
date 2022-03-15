@@ -12,11 +12,9 @@ class Player : public Entity
 {
     private:
         std::vector<std::unique_ptr<olc::Renderable>> m_pPlayerSprite;
-
-        olc::vf2d m_vSpriteSize = { 16.0f, 22.0f };
-
         std::vector<olc::vf2d> m_vSpriteStartPos;
 
+        olc::vf2d m_vSpriteSize = { 16.0f, 22.0f };
         olc::vf2d m_vSpriteCurrentPos;
         olc::vf2d m_vSpriteTransform;
         int m_iSpriteStartFrame = 0;
@@ -24,9 +22,10 @@ class Player : public Entity
         int m_iSpriteCurrentCol;
         int m_iSpriteCurrentRow;
         int m_iSpriteDir;
-
         int m_iPlayerState;
         int m_iAnimInterval;
+
+        int m_iCoin;
 
     public:
         bool m_bSprint = false;
@@ -36,11 +35,12 @@ class Player : public Entity
         ~Player();
 
         void OnCreate();
-
         bool Update(int iGameTick);
         void SetState(int iState);
-        void DrawSelf(olc::TileTransformedView* tv);
-
+        void DrawSelf(olc::TileTransformedView* tv) override;
         int State();
         void DrawDebug(olc::PixelGameEngine* pge);
+        void DrawStats(olc::PixelGameEngine* pge);
+
+        void AddCoin(int coin);
 };

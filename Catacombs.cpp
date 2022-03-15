@@ -5,6 +5,13 @@
 #include "World.h"
 #include "Entity.h"
 #include "Player.h"
+#include "Counter.h"
+#include "MathUtils.h"
+#include "Loot.h"
+
+
+float ReMap(float x, float fromMin, float fromMax, float toMin, float toMax);
+float DistanceBetweenPoints(olc::vf2d vecA, olc::vf2d vecB);
 
 
 class Catacombs : public olc::PixelGameEngine
@@ -18,11 +25,12 @@ class Catacombs : public olc::PixelGameEngine
     private:
         olc::TileTransformedView tv;
 
-
         Player cPlayer = Player({ 1.5f, 1.5f });
         int iGameTick;
 
         World cWorld = World();
+        std::vector<std::unique_ptr<Entity>> vEntities;
+        Counter cTickCounterEntity = Counter(5);
 
         bool bDebug = false;
 
@@ -33,12 +41,14 @@ class Catacombs : public olc::PixelGameEngine
             tv = olc::TileTransformedView({ ScreenWidth(), ScreenHeight() }, { 32, 32 });
 
             cWorld.GenerateWorld();
-            std::cout << "Map size: " << cWorld.sMap.length() << std::endl;
-            std::cout << "Last element: " << cWorld.sMap[cWorld.sMap.length() - 1] << std::endl;
+            GenerateEntities();
+
             cPlayer.OnCreate();
+            cTickCounterEntity.Start();
+
             olc::vf2d spawn = cWorld.FindSpawnableCell();
-            std::cout << "Player spawn: " << spawn << std::endl;
             cPlayer.SetPos(spawn);
+
             cWorld.PrintWorld();
 
             return true;
@@ -51,6 +61,7 @@ class Catacombs : public olc::PixelGameEngine
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
             UpdateEntities();
+            CheckForEntityCollisions();
             Render();
             RenderDebug();
 
@@ -65,7 +76,17 @@ class Catacombs : public olc::PixelGameEngine
         /*************************************************/
         void UpdateEntities()
         {
-            if (cPlayer.Update(iGameTick)) iGameTick = 0;
+            cPlayer.Update(iGameTick);
+            cTickCounterEntity.Update();
+            if (cTickCounterEntity.Check())
+            {
+                cTickCounterEntity.Reset();
+                cTickCounterEntity.Start();
+                for (int i = 0; i < vEntities.size(); i++)
+                {
+                    vEntities[i]->Update();
+                }
+            }
         }
 
 
@@ -80,31 +101,14 @@ class Catacombs : public olc::PixelGameEngine
 
         void Render()
         {
-
-            // Clear World
             Clear(olc::VERY_DARK_BLUE);
-
-            // Draw World
-            olc::vi2d vTopLeft = tv.GetTopLeftTile().max({ 0, 0 });
-            olc::vi2d vBottomRight = tv.GetBottomRightTile().min(cWorld.GetSize());
-            olc::vi2d vTile;
-
-            int count = 0;
-            for (vTile.y = vTopLeft.y; vTile.y < vBottomRight.y; vTile.y++)
-            {
-                for (vTile.x = vTopLeft.x; vTile.x < vBottomRight.x; vTile.x++)
-                {
-                    int index = vTile.y * cWorld.GetSize().x + vTile.x;
-                    if (cWorld.sMap[index] == '#')
-                    {
-                        // TODO - Replace rectangles with sprites (decals)
-                        tv.DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
-                    }
-                }
-            }
-
-            // Draw Player
+            cWorld.DrawMap(&tv);
             cPlayer.DrawSelf(&tv);
+            cPlayer.DrawStats(this);
+            for (int i = 0; i < vEntities.size(); i++)
+            {
+                vEntities[i]->DrawSelf(&tv);
+            }
         }
 
 
@@ -197,6 +201,19 @@ class Catacombs : public olc::PixelGameEngine
             cPlayer.SetPos(vPotentialPosition);
         }
 
+
+        void CheckForEntityCollisions()
+        {
+            for (int i = vEntities.size() - 1; i >= 0; i--)
+            {
+                if (MathUtils::DistanceBetweenPoints(cPlayer.GetPos(), vEntities[i]->GetPos()) < 0.7f)
+                {
+                    cPlayer.AddCoin(vEntities[i]->GetValue());
+                    vEntities.erase(vEntities.begin() + i);
+                }
+            }
+        }
+
         void HandlePanAndZoom()
         {
             if (!bDebug)
@@ -212,6 +229,19 @@ class Catacombs : public olc::PixelGameEngine
 
             if (GetMouseWheel() > 0) tv.ZoomAtScreenPos(2.0f, GetMousePos());
             if (GetMouseWheel() < 0) tv.ZoomAtScreenPos(0.5f, GetMousePos());
+        }
+
+
+        void GenerateEntities()
+        {
+            for(int i = 0; i < 20; i++)
+            {
+                olc::vf2d vec = cWorld.FindRandomOpenSpot();
+                vec = { vec.x + 0.5f, vec.y + 0.5f };
+                std::unique_ptr<Loot> loot = std::make_unique<Loot>(vec);
+                loot->OnCreate();
+                vEntities.push_back(std::move(loot));
+            }
         }
 };
 
