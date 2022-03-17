@@ -130,7 +130,8 @@ void Player::SetState(int iState)
 
 void Player::DrawSelf(olc::TileTransformedView* tv)
 {
-    tv->DrawPartialDecal({ m_vPos.x  - 0.5f, m_vPos.y - 0.8f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
+    //tv->DrawPartialDecal({ m_vPos.x  - 0.5f, m_vPos.y - 0.8f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
+    tv->DrawPartialDecal({ m_vPos.x  - 0.0f, m_vPos.y - 0.34f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
             m_vSpriteCurrentPos, m_vSpriteSize, { 2.0f, 2.0f });
 }
 
@@ -181,6 +182,12 @@ olc::vf2d Player::GetMoveVel()
 }
 
 
+olc::vf2d Player::GetBoxCollider()
+{
+    return m_vBoxCollider;
+}
+
+
 void Player::SetMoveVel(olc::vf2d vVel)
 {
     m_vMoveVel = vVel;
@@ -197,6 +204,6 @@ void Player::Jump()
 {
     if (m_vVel.mag2() == 0.0f)
     {
-      SetVel({ 0.0f, -16.0f});
+      SetVel({ 0.0f, -24.0f});
     }
 }

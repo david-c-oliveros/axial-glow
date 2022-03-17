@@ -17,6 +17,7 @@ class Player : public Entity
         olc::vf2d m_vSpriteSize = { 16.0f, 22.0f };
         olc::vf2d m_vSpriteCurrentPos;
         olc::vf2d m_vSpriteTransform;
+        olc::vf2d m_vBoxCollider = { 10.0f, 22.0f };
         int m_iSpriteStartFrame = 0;
         int m_iSpriteEndFrame = 5;
         int m_iSpriteCurrentCol;
@@ -40,13 +41,14 @@ class Player : public Entity
         bool Update(int iGameTick);
         int GetState();
         void SetState(int iState);
-        void DrawSelf(olc::TileTransformedView* tv) override;
+        void DrawSelf(olc::TileTransformedView* tv);
         void DrawDebug(olc::PixelGameEngine* pge);
         void DrawStats(olc::PixelGameEngine* pge);
 
         void AddCoin(int iCoin);
         olc::vf2d GetVel();
         olc::vf2d GetMoveVel();
+        olc::vf2d GetBoxCollider() override;
         void SetMoveVel(olc::vf2d vVel);
         void AddMoveVel(olc::vf2d vVel);
         void Jump();

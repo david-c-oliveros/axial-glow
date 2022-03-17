@@ -10,10 +10,6 @@
 #include "Loot.h"
 
 
-float ReMap(float x, float fromMin, float fromMax, float toMin, float toMax);
-float DistanceBetweenPoints(olc::vf2d vecA, olc::vf2d vecB);
-
-
 class Catacombs : public olc::PixelGameEngine
 {
     public:
@@ -33,7 +29,6 @@ class Catacombs : public olc::PixelGameEngine
         std::vector<std::unique_ptr<Entity>> vEntities;
         Counter cTickCounterEntity = Counter(5);
 
-        //const olc::vf2d vGravityVec = { 0.0f, 9.8f };
         const olc::vf2d vGravityVec = { 0.0f, 1.0f };
 
 
@@ -156,7 +151,7 @@ class Catacombs : public olc::PixelGameEngine
 //                // TODO - Player stamina drain
 //            }
 
-            const int iVelMul = (cPlayer.m_bSprint ? 7.0f : 4.0f);
+            const int iVelMul = (cPlayer.m_bSprint ? 16.0f : 8.0f);
             cPlayer.SetMoveVel(cPlayer.GetMoveVel() * iVelMul);
 
             if (GetKey(olc::Key::SPACE).bPressed)
@@ -186,38 +181,33 @@ class Catacombs : public olc::PixelGameEngine
             {
                 for (vCell.x = vAreaTL.x; vCell.x <= vAreaBR.x; vCell.x++)
                 {
-                    if (cWorld.sMap[vCell.y * cWorld.GetSize().x + vCell.x] == '#')
+                    int index = vCell.y * cWorld.GetSize().x + vCell.x;
+
+                    // Account for edge case where index evaluates to out side of map
+                    if (index >= cWorld.sMap.length())
+                        index -= cWorld.GetSize().x;
+
+                    if (cWorld.sMap[index] == '#')
                     {
-                        // If the region contains a solid cell,
-                        // find the nearest point on that cell to the circle
-                        olc::vf2d vNearestPoint;
-                        vNearestPoint.x = std::max(float(vCell.x), std::min(vPotentialPosition.x,
-                                    float(vCell.x + 1)));
-                        vNearestPoint.y = std::max(float(vCell.y), std::min(vPotentialPosition.y,
-                                    float(vCell.y + 1)));
-
-                        // Cast ray from center of potential circle position to nearest point on solid cell
-                        olc::vf2d vRayToNearest = vNearestPoint - vPotentialPosition;
-                        // Calculate the overlap between the circle and the solid cell
- 
-                        // TODO - FIX BUG HERE - If player is inside a solid square,
-                        // then vRayToNearest.mag() returns {nan, nan}
-//                        if (vRayToNearest.x != 0.0f && vRayToNearest.y != 0.0f )
-                        float fOverlap = entity->fColliderRadius - vRayToNearest.mag();
-
-                        // Handle divide-by-zero edge case
-                        if  (std::isnan(fOverlap)) fOverlap = 0;
-
-                        // If an overlap exists, resolve it
-                        if (fOverlap > 0)
+                        if (CheckBoxCollision(vPotentialPosition, entity->GetBoxCollider(), vCell, { 1.0f, 1.0f }))
                         {
-                            vPotentialPosition = vPotentialPosition - vRayToNearest.norm() * fOverlap;
+                            // TODO - Fix collisions in x-axis
+                            vPotentialPosition = { vPotentialPosition.x, entity->GetPos().y };
                             entity->SetVel({ 0.0f, 0.0f });
                         }
                     }
                 }
             }
             return vPotentialPosition;
+        }
+
+
+        bool CheckBoxCollision(olc::vf2d vPosA, olc::vf2d vDimA, olc::vf2d vPosB, olc::vf2d vDimB)
+        {
+            return (vPosA.x < vPosB.x + vDimB.x &&
+                    vPosA.x + vDimA.x > vPosB.x &&
+                    vPosA.y < vPosB.y + vDimB.y &&
+                    vDimA.y + vPosA.y > vPosB.y);
         }
 
 
