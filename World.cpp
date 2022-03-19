@@ -55,7 +55,7 @@ olc::vf2d World::FindSpawnableCell()
         {
             if (sMap[i * vSize.x + j] == '.')
             {
-                return { j + 0.5f, i + 0.5f };
+                return { j, i };
             }
         }
     }
@@ -80,7 +80,7 @@ void World::DrawMap(olc::TileTransformedView* tv)
             if (sMap[vTile.y * vSize.x + vTile.x] == '#')
             {
                 tv->DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
-                tv->DrawPartialDecal(vTile, m_pMapSprite->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
+                //tv->DrawPartialDecal(vTile, m_pMapSprite->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
             }
         }
     }
@@ -100,4 +100,13 @@ olc::vf2d World::FindRandomOpenSpot()
     }
 
     return randCoord;
+}
+
+
+char World::GetTile(olc::vi2d vCoords)
+{
+    int index = vCoords.y * vSize.x + vCoords.x;
+    if (index >= sMap.length())
+        return '#';
+    return sMap[index];
 }

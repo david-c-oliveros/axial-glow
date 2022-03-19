@@ -25,4 +25,5 @@ class World
         olc::vi2d GetSize();
         void DrawMap(olc::TileTransformedView* tv);
         olc::vf2d FindRandomOpenSpot();
+        char GetTile(olc::vi2d vCoords);
 };

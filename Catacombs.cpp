@@ -10,6 +10,12 @@
 #include "Loot.h"
 
 
+struct posvel_t {
+    olc::vf2d pos;
+    olc::vf2d vel;
+};
+
+
 class Catacombs : public olc::PixelGameEngine
 {
     public:
@@ -46,8 +52,6 @@ class Catacombs : public olc::PixelGameEngine
 
             olc::vf2d spawn = cWorld.FindSpawnableCell();
             cPlayer.SetPos(spawn);
-
-            cWorld.PrintWorld();
 
             return true;
         }
@@ -93,7 +97,7 @@ class Catacombs : public olc::PixelGameEngine
         /****************************************/
         void RenderDebug()
         {
-            cPlayer.DrawDebug(this);
+            cPlayer.DrawDebug(this, &tv);
         }
 
 
@@ -116,16 +120,16 @@ class Catacombs : public olc::PixelGameEngine
 
             // Player Control
             cPlayer.SetMoveVel({ 0.0f, 0.0f });
-//            if (GetKey(olc::Key::W).bHeld)
-//            {
-//                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-//                cPlayer.AddMoveVel({  0.0f, -1.0f });
-//            }
-//            if (GetKey(olc::Key::S).bHeld)
-//            {
-//                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-//                cPlayer.AddMoveVel({  0.0f,  1.0f });
-//            }
+            if (GetKey(olc::Key::W).bHeld)
+            {
+                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
+                cPlayer.AddMoveVel({  0.0f, -1.0f });
+            }
+            if (GetKey(olc::Key::S).bHeld)
+            {
+                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
+                cPlayer.AddMoveVel({  0.0f,  1.0f });
+            }
             if (GetKey(olc::Key::A).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_LEFT);
@@ -138,21 +142,18 @@ class Catacombs : public olc::PixelGameEngine
             }
             if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != PLAYER_REST)
             {
-                cPlayer.m_bSprint = true;
+                cPlayer.bSprint = true;
             }
             else
-                cPlayer.m_bSprint = false;
+                cPlayer.bSprint = false;
             // Normalize velocity vector
-//            if (cPlayer.GetMoveVel().mag2() > 0)
-//            {
-//                const int iVelMul = (cPlayer.m_bSprint ? 7.0f : 4.0f);
-//                cPlayer.SetMoveVel(cPlayer.GetMoveVel().norm() * iVelMul);
-//
-//                // TODO - Player stamina drain
-//            }
+            if (cPlayer.GetMoveVel().mag2() > 0)
+            {
+                const int iVelMul = (cPlayer.bSprint ? 7.0f : 4.0f);
+                cPlayer.SetMoveVel(cPlayer.GetMoveVel().norm() * iVelMul);
 
-            const int iVelMul = (cPlayer.m_bSprint ? 16.0f : 8.0f);
-            cPlayer.SetMoveVel(cPlayer.GetMoveVel() * iVelMul);
+                // TODO - Player stamina drain
+            }
 
             if (GetKey(olc::Key::SPACE).bPressed)
             {
@@ -160,45 +161,61 @@ class Catacombs : public olc::PixelGameEngine
             }
 
             cPlayer.AddVel(vGravityVec);
-            olc::vf2d newPos = CheckForMapCollisions(&cPlayer, fElapsedTime);
-            cPlayer.SetPos(newPos);
+            posvel_t pvNewPosVel = ResolveMapCollisions(cPlayer.GetPos(), cPlayer.GetVel(), fElapsedTime);
+            cPlayer.SetPos(pvNewPosVel.pos);
+            cPlayer.SetVel(pvNewPosVel.vel);
+            std::cout << "Pos: " << cPlayer.GetPos() << std::endl;
+            std::cout << "Vel: " << cPlayer.GetVel() << std::endl;
         }
 
 
-        olc::vf2d CheckForMapCollisions(Entity* entity, float fElapsedTime)
+        posvel_t ResolveMapCollisions(olc::vf2d vPos, olc::vf2d vVel, float fElapsedTime)
         {
-            olc::vf2d vPotentialPosition = entity->GetPos() + (entity->GetVel() * fElapsedTime);
+            olc::vf2d vPotentialPos = vPos + (vVel * fElapsedTime);
+            olc::vf2d vNewVel = vVel;
 
-            // Extract potential collision region
-            olc::vi2d vCurrentCell = entity->GetPos().floor();
-            olc::vi2d vTargetCell = vPotentialPosition;
-            olc::vi2d vAreaTL = (vCurrentCell.min(vTargetCell) - olc::vi2d(1, 1)).max({ 0, 0});
-            olc::vi2d vAreaBR = (vCurrentCell.max(vTargetCell) + olc::vi2d(1, 1)).min(cWorld.GetSize());
-
-            // Iterate through each cell in potential collision region
-            olc::vi2d vCell;
-            for (vCell.y = vAreaTL.y; vCell.y <= vAreaBR.y; vCell.y++)
+            if (vVel.x <= 0)
             {
-                for (vCell.x = vAreaTL.x; vCell.x <= vAreaBR.x; vCell.x++)
+                if (cWorld.GetTile({ vPotentialPos.x + 0.0f, vPos.y + 0.0f }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 0.0f, vPos.y + 0.9f }) != '.')
                 {
-                    int index = vCell.y * cWorld.GetSize().x + vCell.x;
-
-                    // Account for edge case where index evaluates to out side of map
-                    if (index >= cWorld.sMap.length())
-                        index -= cWorld.GetSize().x;
-
-                    if (cWorld.sMap[index] == '#')
-                    {
-                        if (CheckBoxCollision(vPotentialPosition, entity->GetBoxCollider(), vCell, { 1.0f, 1.0f }))
-                        {
-                            // TODO - Fix collisions in x-axis
-                            vPotentialPosition = { vPotentialPosition.x, entity->GetPos().y };
-                            entity->SetVel({ 0.0f, 0.0f });
-                        }
-                    }
+                    vPotentialPos.x = (int)vPotentialPos.x + 1;
+                    vNewVel.x = 0.0f;
                 }
             }
-            return vPotentialPosition;
+            else
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 1.0f, vPos.y + 0.0f }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 1.0f, vPos.y + 0.9f }) != '.')
+                {
+                    vPotentialPos.x = (int)vPotentialPos.x;
+                    vNewVel.x = 0.0f;
+                }
+            }
+
+            if (vVel.y <= 0)
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 0.0f, vPotentialPos.y }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 0.9f, vPotentialPos.y }) != '.')
+                {
+                    vPotentialPos.y = (int)vPotentialPos.y + 1;
+                    vNewVel.y = 0.0f;
+                }
+            }
+            else
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 0.0f, vPotentialPos.y + 1.0f }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 0.9f, vPotentialPos.y + 1.0f }) != '.')
+                {
+                    vPotentialPos.y = (int)vPotentialPos.y;
+                    vNewVel.y = 0.0f;
+                }
+            }
+
+            posvel_t pvResolvedCollision;
+            pvResolvedCollision.pos = vPotentialPos;
+            pvResolvedCollision.vel = vNewVel;
+            return pvResolvedCollision;
         }
 
 

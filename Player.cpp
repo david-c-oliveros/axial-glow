@@ -34,7 +34,7 @@ void Player::OnCreate()
 
 bool Player::Update(int iGameTick)
 {
-    m_iAnimInterval = m_bSprint ? 3 : 5;
+    m_iAnimInterval = bSprint ? 3 : 5;
 
     if (iGameTick % m_iAnimInterval == 0)
     {
@@ -130,29 +130,39 @@ void Player::SetState(int iState)
 
 void Player::DrawSelf(olc::TileTransformedView* tv)
 {
-    //tv->DrawPartialDecal({ m_vPos.x  - 0.5f, m_vPos.y - 0.8f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
-    tv->DrawPartialDecal({ m_vPos.x  - 0.0f, m_vPos.y - 0.34f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
-            m_vSpriteCurrentPos, m_vSpriteSize, { 2.0f, 2.0f });
+    //olc::vf2d scale = { 1.994f, 1.45f }; // - To unit square
+    olc::vf2d size = { 32.0f, 32.0f };
+    tv->FillRectDecal(m_vPos, { 1.0, 1.0, }, olc::Pixel(255, 255, 255, 64));
+    tv->DrawPartialDecal({ m_vPos.x + 0.17f, m_vPos.y - 0.0f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
+            m_vSpriteCurrentPos, m_vSpriteSize, { 1.45, 1.45f });
 }
 
 
-void Player::DrawDebug(olc::PixelGameEngine* pge)
+void Player::DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
 {
+//    tv->FillRectDecal(m_vPos, { 1.0f, 1.0f }, olc::Pixel(0, 0, 255, 64));
     std::string sPlayerPos = "Position: " + std::to_string(m_vPos.x) + ", " + std::to_string(m_vPos.y);
     std::string sPlayerVel = "Velocity: " + std::to_string(m_vVel.x) + ", " + std::to_string(m_vVel.y);
-    std::string sPlayerMoveVel = "Move Velocity: " + std::to_string(m_vMoveVel.x) + ", " + std::to_string(m_vMoveVel.y);
+    std::string sPlayerMoveVel = "Move Velocity: " + std::to_string(m_vMoveVel.x) +
+                                 ", " + std::to_string(m_vMoveVel.y);
     std::string sPlayerState = "State: " + std::to_string(m_iPlayerState);
-    std::string sPlayerSprint = "Sprint: " + std::to_string(m_bSprint);
+    std::string sPlayerSprint = "Sprint: " + std::to_string(bSprint);
     olc::vf2d str_velocityPos = { 5.0f, 5.0f };
     olc::vf2d str_positionPos = { 5.0f, 15.0f };
     olc::vf2d str_statePos = { 5.0f, 25.0f };
     olc::vf2d str_sprintPos = { 5.0f, 35.0f };
     olc::vf2d str_moveVelocityPos = { 5.0f, 45.0f };
+    olc::vf2d str_collide = { 5.0f, 55.0f };
     pge->DrawStringDecal(str_positionPos, sPlayerPos);
     pge->DrawStringDecal(str_velocityPos, sPlayerVel);
     pge->DrawStringDecal(str_statePos, sPlayerState);
     pge->DrawStringDecal(str_sprintPos, sPlayerSprint);
     pge->DrawStringDecal(str_moveVelocityPos, sPlayerMoveVel);
+    if (bCollide)
+        pge->DrawStringDecal(str_collide, "Collision!");
+
+    //tv->FillRectDecal(m_vColAreaTL, m_vColAreaBR - m_vColAreaTL + olc::vi2d(1, 1),
+    //                  olc::Pixel(0, 255, 255, 32));
 }
 
 
@@ -200,9 +210,16 @@ void Player::AddMoveVel(olc::vf2d vVel)
 }
 
 
+void Player::SetColArea(olc::vi2d vAreaTL, olc::vi2d vAreaBR)
+{
+    m_vColAreaTL = vAreaTL;
+    m_vColAreaBR = vAreaBR;
+}
+
+
 void Player::Jump()
 {
-    if (m_vVel.mag2() == 0.0f)
+    if (m_vVel.y == 0.0f)
     {
       SetVel({ 0.0f, -24.0f});
     }
