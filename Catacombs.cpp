@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_TransformedView.h"
 #include "World.h"
@@ -10,8 +11,10 @@
 #include "Loot.h"
 
 
-float ReMap(float x, float fromMin, float fromMax, float toMin, float toMax);
-float DistanceBetweenPoints(olc::vf2d vecA, olc::vf2d vecB);
+struct posvel_t {
+    olc::vf2d pos;
+    olc::vf2d vel;
+};
 
 
 class Catacombs : public olc::PixelGameEngine
@@ -27,12 +30,14 @@ class Catacombs : public olc::PixelGameEngine
 
         Player cPlayer = Player({ 1.5f, 1.5f });
         int iGameTick;
+        bool bDebug = false;
 
         World cWorld = World();
         std::vector<std::unique_ptr<Entity>> vEntities;
         Counter cTickCounterEntity = Counter(5);
 
-        bool bDebug = false;
+        const olc::vf2d vGravityVec = { 0.0f, 1.0f };
+
 
     public:
         bool OnUserCreate() override
@@ -49,14 +54,12 @@ class Catacombs : public olc::PixelGameEngine
             olc::vf2d spawn = cWorld.FindSpawnableCell();
             cPlayer.SetPos(spawn);
 
-            cWorld.PrintWorld();
-
             return true;
         }
 
         bool OnUserUpdate(float fElapsedTime) override
         {
-            if (GetKey(olc::Key::SPACE).bReleased) bDebug = !bDebug;
+            if (GetKey(olc::Key::M).bReleased) bDebug = !bDebug;
 
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
@@ -95,7 +98,7 @@ class Catacombs : public olc::PixelGameEngine
         /****************************************/
         void RenderDebug()
         {
-            cPlayer.DrawDebug(this);
+            cPlayer.DrawDebug(this, &tv);
         }
 
 
@@ -117,17 +120,7 @@ class Catacombs : public olc::PixelGameEngine
             cPlayer.SetState(PLAYER_REST);
 
             // Player Control
-            cPlayer.SetVel({ 0.0f, 0.0f });
-            if (GetKey(olc::Key::W).bHeld)
-            {
-                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-                cPlayer.AddVel({  0.0f, -1.0f });
-            }
-            if (GetKey(olc::Key::S).bHeld)
-            {
-                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-                cPlayer.AddVel({  0.0f,  1.0f });
-            }
+            cPlayer.SetVel({ 0.0f, cPlayer.GetVel().y });
             if (GetKey(olc::Key::A).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_LEFT);
@@ -138,67 +131,88 @@ class Catacombs : public olc::PixelGameEngine
                 cPlayer.SetState(PLAYER_WALK_RIGHT);
                 cPlayer.AddVel({  1.0f,  0.0f });
             }
-            if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.State() != PLAYER_REST)
+            if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != PLAYER_REST)
             {
-                cPlayer.m_bSprint = true;
+                cPlayer.bSprint = true;
             }
             else
-                cPlayer.m_bSprint = false;
-
+                cPlayer.bSprint = false;
             // Normalize velocity vector
-            if (cPlayer.GetVel().mag2() > 0)
-            {
-                const int iVelMul = (cPlayer.m_bSprint ? 7.0f : 4.0f);
-                cPlayer.SetVel(cPlayer.GetVel().norm() * iVelMul);
+            const float iVelMul = (cPlayer.bSprint ? 12.0f : 4.0f);
+            cPlayer.SetVel({ cPlayer.GetVel().x * iVelMul, cPlayer.GetVel().y });
 
                 // TODO - Player stamina drain
-            }
-            olc::vf2d vPotentialPosition = cPlayer.GetPos() + (cPlayer.GetVel() * fElapsedTime);
 
-            // Extract potential collision region
-            olc::vi2d vCurrentCell = cPlayer.GetPos().floor();
-            olc::vi2d vTargetCell = vPotentialPosition;
-            olc::vi2d vAreaTL = (vCurrentCell.min(vTargetCell) - olc::vi2d(1, 1)).max({ 0, 0});
-            olc::vi2d vAreaBR = (vCurrentCell.max(vTargetCell) + olc::vi2d(1, 1)).min(cWorld.GetSize());
-
-            // Iterate through each cell in potential collision region
-            olc::vi2d vCell;
-            for (vCell.y = vAreaTL.y; vCell.y <= vAreaBR.y; vCell.y++)
+            if (GetKey(olc::Key::SPACE).bPressed)
             {
-                for (vCell.x = vAreaTL.x; vCell.x <= vAreaBR.x; vCell.x++)
+                cPlayer.Jump();
+            }
+
+            cPlayer.AddVel(vGravityVec);
+            int k = iVelMul;
+            posvel_t pvNewPosVel = ResolveMapCollisions(cPlayer.GetPos(), cPlayer.GetVel(), fElapsedTime);
+
+            cPlayer.SetPos(pvNewPosVel.pos);
+            cPlayer.SetVel(pvNewPosVel.vel);
+        }
+
+
+        posvel_t ResolveMapCollisions(olc::vf2d vPos, olc::vf2d vVel, float fElapsedTime)
+        {
+            olc::vf2d vPotentialPos = vPos + (vVel * fElapsedTime);
+            olc::vf2d vNewVel = vVel;
+
+            if (vVel.x <= 0)
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 0.0f, vPos.y + 0.0f }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 0.0f, vPos.y + 0.9f }) != '.')
                 {
-                    if (cWorld.sMap[vCell.y * cWorld.GetSize().x + vCell.x] == '#')
-                    {
-                        // If the region contains a solid cell,
-                        // find the nearest point on that cell to the circle
-                        olc::vf2d vNearestPoint;
-                        vNearestPoint.x = std::max(float(vCell.x), std::min(vPotentialPosition.x,
-                                    float(vCell.x + 1)));
-                        vNearestPoint.y = std::max(float(vCell.y), std::min(vPotentialPosition.y,
-                                    float(vCell.y + 1)));
-
-                        // Cast ray from center of potential circle position to nearest point on solid cell
-                        olc::vf2d vRayToNearest = vNearestPoint - vPotentialPosition;
-                        // Calculate the overlap between the circle and the solid cell
- 
-                        // TODO - FIX BUG HERE - If player is inside a solid square,
-                        // then vRayToNearest.mag() returns {nan, nan}
-//                        if (vRayToNearest.x != 0.0f && vRayToNearest.y != 0.0f )
-                        float fOverlap = cPlayer.fColliderRadius - vRayToNearest.mag();
-
-                        // Handle divide-by-zero edge case
-                        if  (std::isnan(fOverlap)) fOverlap = 0;
-
-                        // If an overlap exists, resolve it
-                        if (fOverlap > 0)
-                        {
-                            vPotentialPosition = vPotentialPosition - vRayToNearest.norm() * fOverlap;
-                        }
-                    }
+                    vPotentialPos.x = (int)vPotentialPos.x + 1;
+                    vNewVel.x = 0.0f;
+                }
+            }
+            else
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 1.0f, vPos.y + 0.0f }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 1.0f, vPos.y + 0.9f }) != '.')
+                {
+                    vPotentialPos.x = (int)vPotentialPos.x;
+                    vNewVel.x = 0.0f;
                 }
             }
 
-            cPlayer.SetPos(vPotentialPosition);
+            if (vVel.y <= 0)
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 0.0f, vPotentialPos.y }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 0.9f, vPotentialPos.y }) != '.')
+                {
+                    vPotentialPos.y = (int)vPotentialPos.y + 1;
+                    vNewVel.y = 0.0f;
+                }
+            }
+            else
+            {
+                if (cWorld.GetTile({ vPotentialPos.x + 0.0f, vPotentialPos.y + 1.0f }) != '.' ||
+                    cWorld.GetTile({ vPotentialPos.x + 0.9f, vPotentialPos.y + 1.0f }) != '.')
+                {
+                    vPotentialPos.y = (int)vPotentialPos.y;
+                    vNewVel.y = 0.0f;
+                }
+            }
+
+            posvel_t pvResolvedCollision;
+            pvResolvedCollision.pos = vPotentialPos;
+            pvResolvedCollision.vel = vNewVel;
+            return pvResolvedCollision;
+        }
+
+
+        bool CheckBoxCollision(olc::vf2d vPosA, olc::vf2d vDimA, olc::vf2d vPosB, olc::vf2d vDimB)
+        {
+            return (vPosA.x < vPosB.x + vDimB.x &&
+                    vPosA.x + vDimA.x > vPosB.x &&
+                    vPosA.y < vPosB.y + vDimB.y &&
+                    vDimA.y + vPosA.y > vPosB.y);
         }
 
 
@@ -213,6 +227,7 @@ class Catacombs : public olc::PixelGameEngine
                 }
             }
         }
+
 
         void HandlePanAndZoom()
         {

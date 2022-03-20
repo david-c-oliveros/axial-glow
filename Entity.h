@@ -18,7 +18,8 @@ class Entity
         ~Entity();
 
         olc::vf2d GetPos();
-        olc::vf2d GetVel();
+        virtual olc::vf2d GetVel();
+        virtual olc::vf2d GetBoxCollider() {};
 
         void SetPos(olc::vf2d vPos);
         void SetVel(olc::vf2d vVel);
