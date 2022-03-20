@@ -35,6 +35,7 @@ class Player : public Entity
     public:
         bool bSprint = false;
         bool bCollide = false;
+        bool bDebug = false;
 
     public:
         Player(olc::vf2d vPos);
@@ -52,8 +53,8 @@ class Player : public Entity
         olc::vf2d GetVel();
         olc::vf2d GetMoveVel();
         olc::vf2d GetBoxCollider() override;
-        void SetMoveVel(olc::vf2d vVel);
-        void AddMoveVel(olc::vf2d vVel);
+        void SetVelX(float fX);
+        void SetVelY(float fY);
         void SetColArea(olc::vi2d vAreaTL, olc::vi2d vAreaBR);
         void Jump();
 };

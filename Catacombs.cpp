@@ -60,13 +60,15 @@ class Catacombs : public olc::PixelGameEngine
         bool OnUserUpdate(float fElapsedTime) override
         {
             if (GetKey(olc::Key::M).bReleased) bDebug = !bDebug;
+            if (GetKey(olc::Key::N).bReleased) cPlayer.bDebug = !cPlayer.bDebug;
 
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
             UpdateEntities();
             CheckForEntityCollisions();
             Render();
-            RenderDebug();
+            if (cPlayer.bDebug)
+                RenderDebug();
 
             iGameTick++;
 
@@ -120,7 +122,7 @@ class Catacombs : public olc::PixelGameEngine
             cPlayer.SetState(PLAYER_REST);
 
             // Player Control
-            cPlayer.SetVel({ 0.0f, cPlayer.GetVel().y });
+            cPlayer.SetVelX(0.0f);
             if (GetKey(olc::Key::A).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_LEFT);
@@ -137,9 +139,10 @@ class Catacombs : public olc::PixelGameEngine
             }
             else
                 cPlayer.bSprint = false;
-            // Normalize velocity vector
+
+
             const float iVelMul = (cPlayer.bSprint ? 12.0f : 4.0f);
-            cPlayer.SetVel({ cPlayer.GetVel().x * iVelMul, cPlayer.GetVel().y });
+            cPlayer.SetVelX(cPlayer.GetVel().x * iVelMul);
 
                 // TODO - Player stamina drain
 
@@ -220,7 +223,7 @@ class Catacombs : public olc::PixelGameEngine
         {
             for (int i = vEntities.size() - 1; i >= 0; i--)
             {
-                if (MathUtils::DistanceBetweenPoints(cPlayer.GetPos(), vEntities[i]->GetPos()) < 0.7f)
+                if (MathUtils::DistanceBetweenPoints(cPlayer.GetPos() + olc::vf2d(0.5f, 0.5f), vEntities[i]->GetPos()) < 0.5f)
                 {
                     cPlayer.AddCoin(vEntities[i]->GetValue());
                     vEntities.erase(vEntities.begin() + i);
