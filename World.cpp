@@ -27,7 +27,6 @@ void World::LoadMapFromFile(std::string filename)
     while(mapfile >> str)
     {
         sMap += str;
-        std::cout << i << ": " << str << std::endl;
         i++;
     }
 }

@@ -130,9 +130,6 @@ void Player::SetState(int iState)
 
 void Player::DrawSelf(olc::TileTransformedView* tv)
 {
-    //olc::vf2d scale = { 1.994f, 1.45f }; // - To unit square
-    olc::vf2d size = { 32.0f, 32.0f };
-    tv->FillRectDecal(m_vPos, { 1.0, 1.0, }, olc::Pixel(255, 255, 255, 64));
     tv->DrawPartialDecal({ m_vPos.x + 0.17f, m_vPos.y - 0.0f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
             m_vSpriteCurrentPos, m_vSpriteSize, { 1.45, 1.45f });
 }
@@ -140,7 +137,7 @@ void Player::DrawSelf(olc::TileTransformedView* tv)
 
 void Player::DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
 {
-//    tv->FillRectDecal(m_vPos, { 1.0f, 1.0f }, olc::Pixel(0, 0, 255, 64));
+    tv->FillRectDecal(m_vPos, { 1.0, 1.0, }, olc::Pixel(255, 255, 255, 64));
     std::string sPlayerPos = "Position: " + std::to_string(m_vPos.x) + ", " + std::to_string(m_vPos.y);
     std::string sPlayerVel = "Velocity: " + std::to_string(m_vVel.x) + ", " + std::to_string(m_vVel.y);
     std::string sPlayerMoveVel = "Move Velocity: " + std::to_string(m_vMoveVel.x) +
@@ -161,8 +158,6 @@ void Player::DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
     if (bCollide)
         pge->DrawStringDecal(str_collide, "Collision!");
 
-    //tv->FillRectDecal(m_vColAreaTL, m_vColAreaBR - m_vColAreaTL + olc::vi2d(1, 1),
-    //                  olc::Pixel(0, 255, 255, 32));
 }
 
 
@@ -198,15 +193,15 @@ olc::vf2d Player::GetBoxCollider()
 }
 
 
-void Player::SetMoveVel(olc::vf2d vVel)
+void Player::SetVelX(float fX)
 {
-    m_vMoveVel = vVel;
+    m_vVel.x = fX;
 }
 
 
-void Player::AddMoveVel(olc::vf2d vVel)
+void Player::SetVelY(float fY)
 {
-    m_vMoveVel += vVel;
+    m_vVel.y = fY;
 }
 
 
