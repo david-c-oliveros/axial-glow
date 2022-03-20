@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_TransformedView.h"
 #include "World.h"
@@ -119,26 +120,16 @@ class Catacombs : public olc::PixelGameEngine
             cPlayer.SetState(PLAYER_REST);
 
             // Player Control
-            cPlayer.SetMoveVel({ 0.0f, 0.0f });
-            if (GetKey(olc::Key::W).bHeld)
-            {
-                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-                cPlayer.AddMoveVel({  0.0f, -1.0f });
-            }
-            if (GetKey(olc::Key::S).bHeld)
-            {
-                cPlayer.SetState(PLAYER_WALK_UP_DOWN);
-                cPlayer.AddMoveVel({  0.0f,  1.0f });
-            }
+            cPlayer.SetVel({ 0.0f, cPlayer.GetVel().y });
             if (GetKey(olc::Key::A).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_LEFT);
-                cPlayer.AddMoveVel({ -1.0f,  0.0f });
+                cPlayer.AddVel({ -1.0f,  0.0f });
             }
             if (GetKey(olc::Key::D).bHeld)
             {
                 cPlayer.SetState(PLAYER_WALK_RIGHT);
-                cPlayer.AddMoveVel({  1.0f,  0.0f });
+                cPlayer.AddVel({  1.0f,  0.0f });
             }
             if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != PLAYER_REST)
             {
@@ -147,13 +138,10 @@ class Catacombs : public olc::PixelGameEngine
             else
                 cPlayer.bSprint = false;
             // Normalize velocity vector
-            if (cPlayer.GetMoveVel().mag2() > 0)
-            {
-                const int iVelMul = (cPlayer.bSprint ? 7.0f : 4.0f);
-                cPlayer.SetMoveVel(cPlayer.GetMoveVel().norm() * iVelMul);
+            const float iVelMul = (cPlayer.bSprint ? 12.0f : 4.0f);
+            cPlayer.SetVel({ cPlayer.GetVel().x * iVelMul, cPlayer.GetVel().y });
 
                 // TODO - Player stamina drain
-            }
 
             if (GetKey(olc::Key::SPACE).bPressed)
             {
@@ -161,11 +149,11 @@ class Catacombs : public olc::PixelGameEngine
             }
 
             cPlayer.AddVel(vGravityVec);
+            int k = iVelMul;
             posvel_t pvNewPosVel = ResolveMapCollisions(cPlayer.GetPos(), cPlayer.GetVel(), fElapsedTime);
+
             cPlayer.SetPos(pvNewPosVel.pos);
             cPlayer.SetVel(pvNewPosVel.vel);
-            std::cout << "Pos: " << cPlayer.GetPos() << std::endl;
-            std::cout << "Vel: " << cPlayer.GetVel() << std::endl;
         }
 
 

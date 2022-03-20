@@ -182,7 +182,7 @@ void Player::AddCoin(int iCoin)
 
 olc::vf2d Player::GetVel()
 {
-    return m_vVel + m_vMoveVel;
+    return m_vVel;
 }
 
 
