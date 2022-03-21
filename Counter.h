@@ -14,6 +14,7 @@ class Counter
 
         void Start();
         void Reset();
+        void ChangeInterval(int iNewTickInterval);
         void Update();
         bool Check();
 };

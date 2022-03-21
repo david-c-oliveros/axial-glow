@@ -1,6 +1,7 @@
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_TransformedView.h"
 #include "Entity.h"
+#include "Counter.h"
 
 #define PLAYER_REST         0
 #define PLAYER_WALK_LEFT    1
@@ -27,10 +28,12 @@ class Player : public Entity
         int m_iSpriteDir;
         int m_iPlayerState;
         int m_iAnimInterval;
+        Counter m_cAnimCounter;
 
         olc::vf2d m_vMoveVel;
 
         int m_iCoin;
+        int m_iHealthPoints;
 
     public:
         bool bSprint = false;
@@ -42,7 +45,7 @@ class Player : public Entity
         ~Player();
 
         void OnCreate();
-        bool Update(int iGameTick);
+        void Update();
         int GetState();
         void SetState(int iState);
         void DrawSelf(olc::TileTransformedView* tv);
@@ -56,5 +59,8 @@ class Player : public Entity
         void SetVelX(float fX);
         void SetVelY(float fY);
         void SetColArea(olc::vi2d vAreaTL, olc::vi2d vAreaBR);
+
         void Jump();
+        void TakeDamage(int iHP);
+        void Heal(int iHP);
 };

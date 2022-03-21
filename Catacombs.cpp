@@ -6,6 +6,7 @@
 #include "World.h"
 #include "Entity.h"
 #include "Player.h"
+#include "Enemy.h"
 #include "Counter.h"
 #include "MathUtils.h"
 #include "Loot.h"
@@ -28,14 +29,17 @@ class Catacombs : public olc::PixelGameEngine
     private:
         olc::TileTransformedView tv;
 
-        Player cPlayer = Player({ 1.5f, 1.5f });
-        int iGameTick;
-        bool bDebug = false;
-
         World cWorld = World();
-        std::vector<std::unique_ptr<Entity>> vEntities;
+
+        Player cPlayer = Player(olc::vf2d(1.5f, 1.5f));
+
+        std::vector<std::unique_ptr<Entity>> vEnemies;
+        std::vector<std::unique_ptr<Entity>> vLoot;
+
         Counter cTickCounterEntity = Counter(5);
 
+        int iGameTick;
+        bool bDebug = false;
         const olc::vf2d vGravityVec = { 0.0f, 1.0f };
 
 
@@ -81,15 +85,20 @@ class Catacombs : public olc::PixelGameEngine
         /*************************************************/
         void UpdateEntities()
         {
-            cPlayer.Update(iGameTick);
+            cPlayer.Update();
             cTickCounterEntity.Update();
             if (cTickCounterEntity.Check())
             {
                 cTickCounterEntity.Reset();
                 cTickCounterEntity.Start();
-                for (int i = 0; i < vEntities.size(); i++)
+                for (int i = 0; i < vEnemies.size(); i++)
                 {
-                    vEntities[i]->Update();
+                    vEnemies[i]->Update();
+                }
+
+                for (int i = 0; i < vLoot.size(); i++)
+                {
+                    vLoot[i]->Update();
                 }
             }
         }
@@ -110,9 +119,14 @@ class Catacombs : public olc::PixelGameEngine
             cWorld.DrawMap(&tv);
             cPlayer.DrawSelf(&tv);
             cPlayer.DrawStats(this);
-            for (int i = 0; i < vEntities.size(); i++)
+            for (int i = 0; i < vLoot.size(); i++)
             {
-                vEntities[i]->DrawSelf(&tv);
+                vLoot[i]->DrawSelf(&tv);
+            }
+
+            for (int i = 0; i < vEnemies.size(); i++)
+            {
+                vEnemies[i]->DrawSelf(&tv);
             }
         }
 
@@ -221,12 +235,12 @@ class Catacombs : public olc::PixelGameEngine
 
         void CheckForEntityCollisions()
         {
-            for (int i = vEntities.size() - 1; i >= 0; i--)
+            for (int i = vLoot.size() - 1; i >= 0; i--)
             {
-                if (MathUtils::DistanceBetweenPoints(cPlayer.GetPos() + olc::vf2d(0.5f, 0.5f), vEntities[i]->GetPos()) < 0.5f)
+                if (MathUtils::DistanceBetweenPoints(cPlayer.GetPos() + olc::vf2d(0.5f, 0.5f), vLoot[i]->GetPos()) < 0.5f)
                 {
-                    cPlayer.AddCoin(vEntities[i]->GetValue());
-                    vEntities.erase(vEntities.begin() + i);
+                    cPlayer.AddCoin(vLoot[i]->GetValue());
+                    vLoot.erase(vLoot.begin() + i);
                 }
             }
         }
@@ -252,13 +266,24 @@ class Catacombs : public olc::PixelGameEngine
 
         void GenerateEntities()
         {
+            // Loot
             for(int i = 0; i < 20; i++)
             {
                 olc::vf2d vec = cWorld.FindRandomOpenSpot();
                 vec = { vec.x + 0.5f, vec.y + 0.5f };
                 std::unique_ptr<Loot> loot = std::make_unique<Loot>(vec);
                 loot->OnCreate();
-                vEntities.push_back(std::move(loot));
+                vLoot.push_back(std::move(loot));
+            }
+
+            // Enemies
+            for(int i = 0; i < 20; i++)
+            {
+                olc::vf2d vec = cWorld.FindRandomOpenSpot();
+                vec = { vec.x + 0.5f, vec.y + 0.5f };
+                std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>(vec);
+                enemy->OnCreate();
+                vEnemies.push_back(std::move(enemy));
             }
         }
 };
