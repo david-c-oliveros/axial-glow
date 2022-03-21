@@ -1,10 +1,9 @@
 #include "Entity.h"
 
 
-Entity::Entity(olc::vf2d vPos) :
-    m_vPos(vPos)
+Entity::Entity(olc::vf2d vPos, olc::vf2d vVel) :
+    m_vPos(vPos), m_vVel(vVel)
 {
-    m_vVel = { 0.0f, 0.0f };
 }
 
 

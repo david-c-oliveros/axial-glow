@@ -14,7 +14,7 @@ class Entity
         float fColliderRadius = 0.5f;
 
     public:
-        Entity(olc::vf2d vPos);
+        Entity(olc::vf2d vPos, olc::vf2d vVel = { 0.0f, 0.0f });
         ~Entity();
 
         olc::vf2d GetPos();
@@ -26,6 +26,8 @@ class Entity
         void AddVel(olc::vf2d vVel);
 
         virtual void Update() {};
+        virtual void Update(olc::vf2d vPlayerPos) {};
         virtual void DrawSelf(olc::TileTransformedView* tv) = 0;
+        virtual void DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv, int iIndex = 0) {};
         virtual int GetValue() {};
 };

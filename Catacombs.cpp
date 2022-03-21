@@ -93,7 +93,7 @@ class Catacombs : public olc::PixelGameEngine
                 cTickCounterEntity.Start();
                 for (int i = 0; i < vEnemies.size(); i++)
                 {
-                    vEnemies[i]->Update();
+                    vEnemies[i]->Update(cPlayer.GetPos());
                 }
 
                 for (int i = 0; i < vLoot.size(); i++)
@@ -110,6 +110,11 @@ class Catacombs : public olc::PixelGameEngine
         void RenderDebug()
         {
             cPlayer.DrawDebug(this, &tv);
+
+            for (int i = 0; i < vEnemies.size(); i++)
+            {
+                vEnemies[i]->DrawDebug(this, &tv, i);
+            }
         }
 
 
@@ -277,13 +282,15 @@ class Catacombs : public olc::PixelGameEngine
             }
 
             // Enemies
+            int iDir = 1;
             for(int i = 0; i < 20; i++)
             {
                 olc::vf2d vec = cWorld.FindRandomOpenSpot();
                 vec = { vec.x + 0.5f, vec.y + 0.5f };
-                std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>(vec);
+                std::unique_ptr<Enemy> enemy = std::make_unique<Enemy>(vec, 1);
                 enemy->OnCreate();
                 vEnemies.push_back(std::move(enemy));
+                iDir = -iDir;
             }
         }
 };

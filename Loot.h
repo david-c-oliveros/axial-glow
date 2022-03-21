@@ -22,7 +22,7 @@ class Loot : public Entity
         ~Loot();
 
         void OnCreate();
-        void Update();
+        void Update() override;
         void DrawSelf(olc::TileTransformedView* tv);
 
         int GetValue();
