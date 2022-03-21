@@ -25,6 +25,12 @@ void Counter::Reset()
 }
 
 
+void Counter::ChangeInterval(int iNewTickInterval)
+{
+    m_iTickInterval = iNewTickInterval;
+}
+
+
 void Counter::Update()
 {
     if (m_bRunning)

@@ -3,7 +3,7 @@
 
 
 Player::Player(olc::vf2d vPos)
-    : Entity(vPos)
+    : Entity(vPos), m_cAnimCounter(Counter(5))
 {
 }
 
@@ -26,18 +26,26 @@ void Player::OnCreate()
     m_iSpriteDir = 1;
     m_iSpriteCurrentCol = 0;
     m_iPlayerState = PLAYER_REST;
+    m_cAnimCounter.Start();
 
     m_vMoveVel = { 0.0f, 0.0f };
     m_iCoin = 0;
 }
 
 
-bool Player::Update(int iGameTick)
+void Player::Update()
 {
-    m_iAnimInterval = bSprint ? 3 : 5;
+    if (bSprint)
+        m_cAnimCounter.ChangeInterval(3);
+    else
+        m_cAnimCounter.ChangeInterval(5);
+    m_cAnimCounter.Update();
 
-    if (iGameTick % m_iAnimInterval == 0)
+    if (m_cAnimCounter.Check())
     {
+        m_cAnimCounter.Reset();
+        m_cAnimCounter.Start();
+
         /******************************************************/
         /*       Ensure the animation runs currect way        */
         /******************************************************/
@@ -109,10 +117,7 @@ bool Player::Update(int iGameTick)
                                     m_vSpriteStartPos[0].y };
             break;
         }
-
-        return true;
     }
-    return false;
 }
 
 
@@ -218,4 +223,16 @@ void Player::Jump()
     {
       SetVel({ 0.0f, -24.0f});
     }
+}
+
+
+void Player::TakeDamage(int iHP)
+{
+    m_iHealthPoints -= iHP;
+}
+
+
+void Player::Heal(int iHP)
+{
+    m_iHealthPoints += iHP;
 }
