@@ -113,7 +113,7 @@ class Catacombs : public olc::PixelGameEngine
 
             for (int i = 0; i < vEnemies.size(); i++)
             {
-                //vEnemies[i]->DrawDebug(this, &tv, i);
+                vEnemies[i]->DrawDebug(this, &tv, i);
             }
         }
 
@@ -131,7 +131,7 @@ class Catacombs : public olc::PixelGameEngine
 
             for (int i = 0; i < vEnemies.size(); i++)
             {
-                //vEnemies[i]->DrawSelf(&tv);
+                vEnemies[i]->DrawSelf(&tv);
             }
         }
 

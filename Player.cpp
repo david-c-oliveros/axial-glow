@@ -57,7 +57,6 @@ void Player::Update()
                 m_iSpriteCurFrame = m_iSpriteEndFrame;
         }
 
-        std::cout << m_iState << std::endl;
         switch(m_iState)
         {
             case(IDLE):
