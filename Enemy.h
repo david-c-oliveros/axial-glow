@@ -2,7 +2,7 @@
 #include "MathUtils.h"
 
 
-#define IDLE 0
+#define REST 0
 #define ATTACKING 1
 
 

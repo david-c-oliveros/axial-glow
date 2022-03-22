@@ -48,7 +48,7 @@ void Enemy::Update(olc::vf2d vPlayerPos)
     if (MathUtils::DistanceBetweenPoints(m_vPos, vPlayerPos) < 5.0f)
         m_iState = ATTACKING;
     else
-        m_iState = IDLE;
+        m_iState = REST;
 
     Move(vPlayerPos);
 }
@@ -58,7 +58,7 @@ void Enemy::Move(olc::vf2d vTarget)
 {
     switch(m_iState)
     {
-        case(IDLE):
+        case(REST):
             m_pColor = olc::WHITE;
             m_vPos += { 0.1f * m_iDir, 0.0f };
             break;

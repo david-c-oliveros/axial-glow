@@ -9,24 +9,32 @@
 #define PLAYER_WALK_UP_DOWN 3
 
 
+enum State
+{
+    IDLE,
+    RUN_RIGHT,
+    RUN_LEFT
+};
+
+
 class Player : public Entity
 {
     private:
         std::vector<std::unique_ptr<olc::Renderable>> m_pPlayerSprite;
         std::vector<olc::vf2d> m_vSpriteStartPos;
 
-        olc::vf2d m_vSpriteSize = { 16.0f, 22.0f };
-        olc::vf2d m_vSpriteCurrentPos;
+        olc::vf2d m_vSpriteSize = { 48.0f, 48.0f };
         olc::vf2d m_vSpriteTransform;
         olc::vf2d m_vBoxCollider = { 16.0f, 22.0f };
         olc::vi2d m_vColAreaTL;
         olc::vi2d m_vColAreaBR;
+        int m_iSpriteCurPix = 0;
         int m_iSpriteStartFrame = 0;
-        int m_iSpriteEndFrame = 5;
-        int m_iSpriteCurrentCol;
+        int m_iSpriteEndFrame = 3;
+        int m_iSpriteCurFrame;
         int m_iSpriteCurrentRow;
-        int m_iSpriteDir;
-        int m_iPlayerState;
+        int m_iMoveDir;
+        State m_iState;
         int m_iAnimInterval;
         Counter m_cAnimCounter;
 
@@ -47,7 +55,7 @@ class Player : public Entity
         void OnCreate();
         void Update();
         int GetState();
-        void SetState(int iState);
+        void SetState(State iState);
         void DrawSelf(olc::TileTransformedView* tv);
         void DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv);
         void DrawStats(olc::PixelGameEngine* pge);

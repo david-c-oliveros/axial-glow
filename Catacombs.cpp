@@ -113,7 +113,7 @@ class Catacombs : public olc::PixelGameEngine
 
             for (int i = 0; i < vEnemies.size(); i++)
             {
-                vEnemies[i]->DrawDebug(this, &tv, i);
+                //vEnemies[i]->DrawDebug(this, &tv, i);
             }
         }
 
@@ -131,28 +131,28 @@ class Catacombs : public olc::PixelGameEngine
 
             for (int i = 0; i < vEnemies.size(); i++)
             {
-                vEnemies[i]->DrawSelf(&tv);
+                //vEnemies[i]->DrawSelf(&tv);
             }
         }
 
 
         void MovePlayer(float fElapsedTime)
         {
-            cPlayer.SetState(PLAYER_REST);
+            cPlayer.SetState(IDLE);
 
             // Player Control
             cPlayer.SetVelX(0.0f);
             if (GetKey(olc::Key::A).bHeld)
             {
-                cPlayer.SetState(PLAYER_WALK_LEFT);
+                cPlayer.SetState(RUN_LEFT);
                 cPlayer.AddVel({ -1.0f,  0.0f });
             }
             if (GetKey(olc::Key::D).bHeld)
             {
-                cPlayer.SetState(PLAYER_WALK_RIGHT);
+                cPlayer.SetState(RUN_RIGHT);
                 cPlayer.AddVel({  1.0f,  0.0f });
             }
-            if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != PLAYER_REST)
+            if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != IDLE)
             {
                 cPlayer.bSprint = true;
             }

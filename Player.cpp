@@ -13,19 +13,17 @@ Player::~Player() {}
 
 void Player::OnCreate()
 {
-    m_vSpriteStartPos.push_back({ 11.0f, 10.0f });
-    m_vSpriteStartPos.push_back({ 11.0f, 41.0f });
-
     m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
     m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
-    m_pPlayerSprite[0]->Load("./res/sprites/ForestBoy_alpha_Left.png");
-    m_pPlayerSprite[1]->Load("./res/sprites/ForestBoy_alpha_Right.png");
+    m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
+    m_pPlayerSprite[0]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_idle.png");
+    m_pPlayerSprite[1]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_run_right.png");
+    m_pPlayerSprite[2]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_run_left.png");
 
-    m_vSpriteCurrentPos = m_vSpriteStartPos[1];
+    m_iSpriteCurFrame = m_iSpriteStartFrame;
 
-    m_iSpriteDir = 1;
-    m_iSpriteCurrentCol = 0;
-    m_iPlayerState = PLAYER_REST;
+    m_iMoveDir = 1;
+    m_iState = IDLE;
     m_cAnimCounter.Start();
 
     m_vMoveVel = { 0.0f, 0.0f };
@@ -49,73 +47,59 @@ void Player::Update()
         /******************************************************/
         /*       Ensure the animation runs currect way        */
         /******************************************************/
-        if (m_iSpriteDir == 1)
+        if (m_iMoveDir == 1)
         {
-            if (++m_iSpriteCurrentCol > m_iSpriteEndFrame)
-                m_iSpriteCurrentCol = m_iSpriteStartFrame;
-        } else if(m_iSpriteDir == 0)
+            if (++m_iSpriteCurFrame > m_iSpriteEndFrame)
+                m_iSpriteCurFrame = m_iSpriteStartFrame;
+        } else if(m_iMoveDir == 0)
         {
-            if (--m_iSpriteCurrentCol < m_iSpriteStartFrame)
-                m_iSpriteCurrentCol = m_iSpriteEndFrame;
+            if (--m_iSpriteCurFrame < m_iSpriteStartFrame)
+                m_iSpriteCurFrame = m_iSpriteEndFrame;
         }
 
-        switch(m_iPlayerState)
+        std::cout << m_iState << std::endl;
+        switch(m_iState)
         {
-            case(PLAYER_REST):
-                if (m_iSpriteDir == 0)
-                {
-                    m_iSpriteStartFrame = 3;
-                    m_iSpriteEndFrame   = 5;
-                }
-                else if (m_iSpriteDir == 1)
+            case(IDLE):
+                if (m_iMoveDir == 0)
                 {
                     m_iSpriteStartFrame = 0;
-                    m_iSpriteEndFrame   = 2;
+                    m_iSpriteEndFrame   = 3;
                 }
-
-                m_iSpriteCurrentCol = std::clamp(m_iSpriteCurrentCol, m_iSpriteStartFrame, m_iSpriteEndFrame);
-                m_vSpriteCurrentPos = { m_vSpriteStartPos[0].x + m_iSpriteCurrentCol * m_vSpriteSize.x,
-                                        m_vSpriteStartPos[0].y };
+                //else if (m_iMoveDir == 1)
+                //{
+                //    m_iSpriteStartFrame = 0;
+                //    m_iSpriteEndFrame   = 3;
+                //}
+                m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
-            case(PLAYER_WALK_LEFT):
+            case(RUN_LEFT):
                 m_iSpriteStartFrame = 0;
-                m_iSpriteEndFrame = 5;
-                m_iSpriteDir = 0;
-                m_vSpriteCurrentPos = { m_vSpriteStartPos[1].x + m_iSpriteCurrentCol * m_vSpriteSize.x,
-                                        m_vSpriteStartPos[1].y };
+                m_iSpriteEndFrame = 3;
+                m_iMoveDir = 0;
+                m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
-            case(PLAYER_WALK_RIGHT):
+            case(RUN_RIGHT):
                 m_iSpriteStartFrame = 0;
-                m_iSpriteEndFrame = 5;
-                m_iSpriteDir = 1;
-                m_vSpriteCurrentPos = { m_vSpriteStartPos[1].x + m_iSpriteCurrentCol * m_vSpriteSize.x,
-                                        m_vSpriteStartPos[1].y };
-                break;
-
-            case(PLAYER_WALK_UP_DOWN):
-                m_iSpriteStartFrame = 0;
-                m_iSpriteEndFrame = 5;
-                m_vSpriteCurrentPos = { m_vSpriteStartPos[1].x + m_iSpriteCurrentCol * m_vSpriteSize.x,
-                                        m_vSpriteStartPos[1].y };
+                m_iSpriteEndFrame = 3;
+                m_iMoveDir = 1;
+                m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
             default:
-                if (m_iSpriteDir == 0)
+                if (m_iMoveDir == 0)
                 {
                     m_iSpriteStartFrame = 0;
-                    m_iSpriteEndFrame   = 2;
+                    m_iSpriteEndFrame   = 3;
                 }
-                else if (m_iSpriteDir == 1)
+                else if (m_iMoveDir == 1)
                 {
-                m_iSpriteStartFrame = 0;
-                m_iSpriteEndFrame   = 2;
-            }
-
-            m_vSpriteCurrentPos = { m_vSpriteStartPos[0].x + m_iSpriteCurrentCol * m_vSpriteSize.x,
-                                    m_vSpriteStartPos[0].y };
-            break;
+                    m_iSpriteStartFrame = 0;
+                    m_iSpriteEndFrame   = 3;
+                }
+                break;
         }
     }
 }
@@ -123,20 +107,25 @@ void Player::Update()
 
 int Player::GetState()
 {
-    return m_iPlayerState;
+    return m_iState;
 }
 
 
-void Player::SetState(int iState)
+void Player::SetState(State iState)
 {
-    m_iPlayerState = iState;
+    m_iState = iState;
 }
 
 
 void Player::DrawSelf(olc::TileTransformedView* tv)
 {
-    tv->DrawPartialDecal({ m_vPos.x + 0.17f, m_vPos.y - 0.0f }, m_pPlayerSprite[m_iSpriteDir]->Decal(),
-            m_vSpriteCurrentPos, m_vSpriteSize, { 1.45, 1.45f });
+    olc::vf2d vOffsetSpr;
+    if (m_iState == RUN_LEFT)
+        vOffsetSpr = { m_vPos.x - 0.55f, m_vPos.y - 0.5f };
+    else
+        vOffsetSpr = { m_vPos.x + 0.05f, m_vPos.y - 0.5f };
+    tv->DrawPartialDecal(vOffsetSpr, m_pPlayerSprite[m_iState]->Decal(),
+            { m_iSpriteCurPix, 0.0f }, m_vSpriteSize, { 1.0, 1.0f });
 }
 
 
@@ -147,7 +136,7 @@ void Player::DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
     std::string sPlayerVel = "Velocity: " + std::to_string(m_vVel.x) + ", " + std::to_string(m_vVel.y);
     std::string sPlayerMoveVel = "Move Velocity: " + std::to_string(m_vMoveVel.x) +
                                  ", " + std::to_string(m_vMoveVel.y);
-    std::string sPlayerState = "State: " + std::to_string(m_iPlayerState);
+    std::string sPlayerState = "State: " + std::to_string(m_iState);
     std::string sPlayerSprint = "Sprint: " + std::to_string(bSprint);
     olc::vf2d str_velocityPos = { 5.0f, 5.0f };
     olc::vf2d str_positionPos = { 5.0f, 15.0f };
