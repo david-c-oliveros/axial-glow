@@ -13,6 +13,7 @@ class World
 
     public:
         std::unique_ptr<olc::Renderable> m_pMapSprite;
+        std::unique_ptr<olc::Renderable> m_pBGSprite;
         std::string sGreeting;
         std::string sMap;
         olc::vi2d vSize;
@@ -23,7 +24,7 @@ class World
         void PrintWorld();
         olc::vf2d FindSpawnableCell();
         olc::vi2d GetSize();
-        void DrawMap(olc::TileTransformedView* tv);
+        void DrawMap(olc::PixelGameEngine* pge, olc::TileTransformedView* tv);
         olc::vf2d FindRandomOpenSpot();
         char GetTile(olc::vi2d vCoords);
 };

@@ -11,7 +11,9 @@ World::~World() {}
 void World::GenerateWorld()
 {
     m_pMapSprite = std::make_unique<olc::Renderable>();
-    m_pMapSprite->Load("./res/sprites/tilemap.png");
+    m_pBGSprite  = std::make_unique<olc::Renderable>();
+    m_pMapSprite->Load("./res/sprites/map/green-zone-tileset/1 Tiles/Tile_01.png");
+    m_pBGSprite->Load("./res/sprites/map/green-zone-tileset/2 Background/Day/Background.png");
     std::string sFilename = "maps/world_map_3.txt";
     LoadMapFromFile(sFilename);
 }
@@ -67,8 +69,10 @@ olc::vi2d World::GetSize()
 }
 
 
-void World::DrawMap(olc::TileTransformedView* tv)
+void World::DrawMap(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
 {
+    olc::vf2d vBGScale = olc::vf2d(pge->ScreenWidth() / 576.0f, pge->ScreenHeight() / 324.0f);
+    pge->DrawDecal(olc::vf2d(0.0f, 0.0f), m_pBGSprite->Decal(), vBGScale);
     olc::vi2d vTL = tv->GetTopLeftTile().max({ 0, 0 });
     olc::vi2d vBR = tv->GetBottomRightTile().min(vSize);
     olc::vi2d vTile;
@@ -78,8 +82,8 @@ void World::DrawMap(olc::TileTransformedView* tv)
         {
             if (sMap[vTile.y * vSize.x + vTile.x] == '#')
             {
-                tv->DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
-                //tv->DrawPartialDecal(vTile, m_pMapSprite->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
+                //tv->DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
+                tv->DrawPartialDecal(vTile, m_pMapSprite->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
             }
         }
     }

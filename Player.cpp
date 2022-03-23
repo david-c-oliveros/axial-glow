@@ -3,7 +3,7 @@
 
 
 Player::Player(olc::vf2d vPos)
-    : Entity(vPos), m_cAnimCounter(Counter(5))
+    : Entity(vPos), m_cAnimCounter(Counter(6)), m_cJumpCounter(6)
 {
 }
 
@@ -13,12 +13,14 @@ Player::~Player() {}
 
 void Player::OnCreate()
 {
-    m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
-    m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
-    m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
+    for (int i = 0; i <= 4; i++)
+    {
+        m_pPlayerSprite.push_back(std::make_unique<olc::Renderable>());
+    }
+
     m_pPlayerSprite[0]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_idle.png");
     m_pPlayerSprite[1]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_run_right.png");
-    m_pPlayerSprite[2]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_run_left.png");
+    m_pPlayerSprite[2]->Load("./res/sprites/char/cyberpunk-characters/3\ Cyborg/Cyborg_jump_right.png");
 
     m_iSpriteCurFrame = m_iSpriteStartFrame;
 
@@ -33,11 +35,18 @@ void Player::OnCreate()
 
 void Player::Update()
 {
-    if (bSprint)
-        m_cAnimCounter.ChangeInterval(3);
-    else
-        m_cAnimCounter.ChangeInterval(5);
+    if (m_iState != JUMP_RIGHT && m_iState != JUMP_LEFT)
+    {
+        if (bSprint)
+            m_cAnimCounter.ChangeInterval(4);
+        else
+            m_cAnimCounter.ChangeInterval(6);
+    }
+
     m_cAnimCounter.Update();
+
+    if ((m_iState == JUMP_LEFT || m_iState == JUMP_RIGHT) && m_iSpriteCurFrame == m_iSpriteEndFrame)
+        m_iState = IDLE;
 
     if (m_cAnimCounter.Check())
     {
@@ -47,36 +56,29 @@ void Player::Update()
         /******************************************************/
         /*       Ensure the animation runs currect way        */
         /******************************************************/
-        if (m_iMoveDir == 1)
-        {
             if (++m_iSpriteCurFrame > m_iSpriteEndFrame)
                 m_iSpriteCurFrame = m_iSpriteStartFrame;
-        } else if(m_iMoveDir == 0)
-        {
-            if (--m_iSpriteCurFrame < m_iSpriteStartFrame)
-                m_iSpriteCurFrame = m_iSpriteEndFrame;
-        }
 
         switch(m_iState)
         {
             case(IDLE):
-                if (m_iMoveDir == 0)
+                if (m_iMoveDir == -1)
+                {
+                    m_iSpriteStartFrame = 3;
+                    m_iSpriteEndFrame   = 0;
+                }
+                else if (m_iMoveDir == 1)
                 {
                     m_iSpriteStartFrame = 0;
                     m_iSpriteEndFrame   = 3;
                 }
-                //else if (m_iMoveDir == 1)
-                //{
-                //    m_iSpriteStartFrame = 0;
-                //    m_iSpriteEndFrame   = 3;
-                //}
                 m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
             case(RUN_LEFT):
                 m_iSpriteStartFrame = 0;
                 m_iSpriteEndFrame = 3;
-                m_iMoveDir = 0;
+                m_iMoveDir = -1;
                 m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
@@ -87,24 +89,25 @@ void Player::Update()
                 m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
-            default:
-                if (m_iMoveDir == 0)
-                {
-                    m_iSpriteStartFrame = 0;
-                    m_iSpriteEndFrame   = 3;
-                }
-                else if (m_iMoveDir == 1)
-                {
-                    m_iSpriteStartFrame = 0;
-                    m_iSpriteEndFrame   = 3;
-                }
+            case(JUMP_LEFT):
+                m_iSpriteStartFrame = 0;
+                m_iSpriteEndFrame = 3;
+                m_iMoveDir = -1;
+                m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
+                break;
+
+            case(JUMP_RIGHT):
+                m_iSpriteStartFrame = 0;
+                m_iSpriteEndFrame = 3;
+                m_iMoveDir = 1;
+                m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
         }
     }
 }
 
 
-int Player::GetState()
+State Player::GetState()
 {
     return m_iState;
 }
@@ -118,13 +121,30 @@ void Player::SetState(State iState)
 
 void Player::DrawSelf(olc::TileTransformedView* tv)
 {
-    olc::vf2d vOffsetSpr;
-    if (m_iState == RUN_LEFT)
-        vOffsetSpr = { m_vPos.x - 0.55f, m_vPos.y - 0.5f };
+    olc::vf2d vSprPos = m_vPos;
+    olc::vf2d vSprSourcePos = olc::vf2d(m_iSpriteCurPix, 0.0f);
+    olc::vf2d vSprScale = olc::vf2d(m_iMoveDir, 1.0f);
+    int iSprIndex;
+    if (m_iState == JUMP_LEFT || m_iState == JUMP_RIGHT)
+    {
+        iSprIndex = 2;
+    }
+    else if (m_iState == RUN_LEFT || m_iState == RUN_RIGHT)
+    {
+        iSprIndex = 1;
+    }
     else
-        vOffsetSpr = { m_vPos.x + 0.05f, m_vPos.y - 0.5f };
-    tv->DrawPartialDecal(vOffsetSpr, m_pPlayerSprite[m_iState]->Decal(),
-            { m_iSpriteCurPix, 0.0f }, m_vSpriteSize, { 1.0, 1.0f });
+    {
+        iSprIndex = 0;
+    }
+
+    if (m_iMoveDir == -1)
+        vSprPos = { m_vPos.x + 0.9f, m_vPos.y - 0.5f };
+    else
+        vSprPos = { m_vPos.x + 0.08f, m_vPos.y - 0.5f };
+
+    tv->DrawPartialDecal(vSprPos, m_pPlayerSprite[iSprIndex]->Decal(),
+            vSprSourcePos, m_vSpriteSize, vSprScale);
 }
 
 
@@ -207,6 +227,11 @@ void Player::SetColArea(olc::vi2d vAreaTL, olc::vi2d vAreaBR)
 
 void Player::Jump()
 {
+    m_cAnimCounter.ChangeInterval(10);
+    m_cAnimCounter.Reset();
+    m_cAnimCounter.Start();
+    m_iSpriteCurFrame = 0;
+    m_iState = m_iMoveDir == 1 ? JUMP_RIGHT : JUMP_LEFT;
     if (m_vVel.y == 0.0f)
     {
       SetVel({ 0.0f, -24.0f});

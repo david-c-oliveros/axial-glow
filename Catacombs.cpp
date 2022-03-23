@@ -121,7 +121,7 @@ class Catacombs : public olc::PixelGameEngine
         void Render()
         {
             Clear(olc::VERY_DARK_BLUE);
-            cWorld.DrawMap(&tv);
+            cWorld.DrawMap(this, &tv);
             cPlayer.DrawSelf(&tv);
             cPlayer.DrawStats(this);
             for (int i = 0; i < vLoot.size(); i++)
@@ -138,18 +138,21 @@ class Catacombs : public olc::PixelGameEngine
 
         void MovePlayer(float fElapsedTime)
         {
-            cPlayer.SetState(IDLE);
+            if (cPlayer.GetState() != JUMP_LEFT && cPlayer.GetState() != JUMP_RIGHT)
+                cPlayer.SetState(IDLE);
 
             // Player Control
             cPlayer.SetVelX(0.0f);
             if (GetKey(olc::Key::A).bHeld)
             {
-                cPlayer.SetState(RUN_LEFT);
+                if (cPlayer.GetState() != JUMP_LEFT && cPlayer.GetState() != JUMP_RIGHT)
+                    cPlayer.SetState(RUN_LEFT);
                 cPlayer.AddVel({ -1.0f,  0.0f });
             }
             if (GetKey(olc::Key::D).bHeld)
             {
-                cPlayer.SetState(RUN_RIGHT);
+                if (cPlayer.GetState() != JUMP_LEFT && cPlayer.GetState() != JUMP_RIGHT)
+                    cPlayer.SetState(RUN_RIGHT);
                 cPlayer.AddVel({  1.0f,  0.0f });
             }
             if (GetKey(olc::Key::SHIFT).bHeld && cPlayer.GetState() != IDLE)

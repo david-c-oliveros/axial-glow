@@ -80,7 +80,8 @@ olc::vf2d Enemy::GetVecToObj(olc::vf2d vObjPos)
 
 void Enemy::DrawSelf(olc::TileTransformedView* tv)
 {
-    tv->FillCircle(m_vPos, m_fRadius, m_pColor);
+    //tv->FillCircle(m_vPos, m_fRadius, m_pColor);
+    tv->FillRectDecal(m_vPos, olc::vf2d(1.0f, 1.0f));
 }
 
 

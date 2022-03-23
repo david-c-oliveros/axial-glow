@@ -3,17 +3,14 @@
 #include "Entity.h"
 #include "Counter.h"
 
-#define PLAYER_REST         0
-#define PLAYER_WALK_LEFT    1
-#define PLAYER_WALK_RIGHT   2
-#define PLAYER_WALK_UP_DOWN 3
-
 
 enum State
 {
     IDLE,
     RUN_RIGHT,
-    RUN_LEFT
+    RUN_LEFT,
+    JUMP_RIGHT,
+    JUMP_LEFT
 };
 
 
@@ -37,6 +34,7 @@ class Player : public Entity
         State m_iState;
         int m_iAnimInterval;
         Counter m_cAnimCounter;
+        Counter m_cJumpCounter;
 
         olc::vf2d m_vMoveVel;
 
@@ -54,7 +52,7 @@ class Player : public Entity
 
         void OnCreate();
         void Update();
-        int GetState();
+        State GetState();
         void SetState(State iState);
         void DrawSelf(olc::TileTransformedView* tv);
         void DrawDebug(olc::PixelGameEngine* pge, olc::TileTransformedView* tv);
