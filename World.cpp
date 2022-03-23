@@ -10,11 +10,17 @@ World::~World() {}
 
 void World::GenerateWorld()
 {
-    m_pMapSprite = std::make_unique<olc::Renderable>();
+    for (int i = 0; i < 3; i++)
+    {
+        m_vMapSprites.push_back(std::make_unique<olc::Renderable>());
+    }
+    m_vMapSprites[0]->Load("./res/sprites/map/green-zone-tileset/1 Tiles/Tile_01.png");
+    m_vMapSprites[1]->Load("./res/sprites/map/industrial-zone-tileset/1 Tiles/IndustrialTile_65.png");
+    m_vMapSprites[2]->Load("./res/sprites/map/green-zone-tileset/1 Tiles/Tile_01.png");
+
     m_pBGSprite  = std::make_unique<olc::Renderable>();
-    m_pMapSprite->Load("./res/sprites/map/green-zone-tileset/1 Tiles/Tile_01.png");
     m_pBGSprite->Load("./res/sprites/map/green-zone-tileset/2 Background/Day/Background.png");
-    std::string sFilename = "maps/world_map_3.txt";
+    std::string sFilename = "maps/world_map_12.txt";
     LoadMapFromFile(sFilename);
 }
 
@@ -80,10 +86,18 @@ void World::DrawMap(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
     {
         for (vTile.x = vTL.x; vTile.x < vBR.x; vTile.x++)
         {
-            if (sMap[vTile.y * vSize.x + vTile.x] == '#')
+            //tv->DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
+            switch(sMap[vTile.y * vSize.x + vTile.x])
             {
-                //tv->DrawRect(vTile, { 1.0f, 1.0f }, olc::WHITE);
-                tv->DrawPartialDecal(vTile, m_pMapSprite->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
+                case('#'):
+                    tv->DrawPartialDecal(vTile, m_vMapSprites[0]->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
+                    break;
+                case('='):
+                    tv->DrawPartialDecal(vTile, m_vMapSprites[1]->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
+                    break;
+                case('+'):
+                    tv->DrawPartialDecal(vTile, m_vMapSprites[2]->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
+                    break;
             }
         }
     }

@@ -12,7 +12,7 @@ class World
         ~World();
 
     public:
-        std::unique_ptr<olc::Renderable> m_pMapSprite;
+        std::vector<std::unique_ptr<olc::Renderable>> m_vMapSprites;
         std::unique_ptr<olc::Renderable> m_pBGSprite;
         std::string sGreeting;
         std::string sMap;
