@@ -20,14 +20,14 @@ void World::GenerateWorld()
 
     m_pBGSprite  = std::make_unique<olc::Renderable>();
     m_pBGSprite->Load("./res/sprites/map/green-zone-tileset/2 Background/Day/Background.png");
-    std::string sFilename = "maps/world_map_12.txt";
+    std::string sFilename = "maps/world_map_13.txt";
     LoadMapFromFile(sFilename);
 }
 
 
 void World::LoadMapFromFile(std::string filename)
 {
-    vSize = { 128, 16 };
+    vSize = { 128, 24 };
     std::ifstream mapfile;
     mapfile.open(filename);
     std::string str;

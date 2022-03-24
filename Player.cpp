@@ -56,22 +56,12 @@ void Player::Update()
         /******************************************************/
         /*       Ensure the animation runs currect way        */
         /******************************************************/
-            if (++m_iSpriteCurFrame > m_iSpriteEndFrame)
-                m_iSpriteCurFrame = m_iSpriteStartFrame;
+        if (++m_iSpriteCurFrame > m_iSpriteEndFrame)
+            m_iSpriteCurFrame = m_iSpriteStartFrame;
 
         switch(m_iState)
         {
             case(IDLE):
-                if (m_iMoveDir == -1)
-                {
-                    m_iSpriteStartFrame = 3;
-                    m_iSpriteEndFrame   = 0;
-                }
-                else if (m_iMoveDir == 1)
-                {
-                    m_iSpriteStartFrame = 0;
-                    m_iSpriteEndFrame   = 3;
-                }
                 m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
                 break;
 
@@ -83,7 +73,7 @@ void Player::Update()
                 break;
 
             case(RUN_RIGHT):
-                m_iSpriteStartFrame = 0;
+
                 m_iSpriteEndFrame = 3;
                 m_iMoveDir = 1;
                 m_iSpriteCurPix = m_iSpriteCurFrame * m_vSpriteSize.x;
@@ -125,6 +115,7 @@ void Player::DrawSelf(olc::TileTransformedView* tv)
     olc::vf2d vSprSourcePos = olc::vf2d(m_iSpriteCurPix, 0.0f);
     olc::vf2d vSprScale = olc::vf2d(m_iMoveDir, 1.0f);
     int iSprIndex;
+    std::cout << vSprSourcePos / m_vSpriteSize << std::endl;
     if (m_iState == JUMP_LEFT || m_iState == JUMP_RIGHT)
     {
         iSprIndex = 2;
