@@ -115,7 +115,6 @@ void Player::DrawSelf(olc::TileTransformedView* tv)
     olc::vf2d vSprSourcePos = olc::vf2d(m_iSpriteCurPix, 0.0f);
     olc::vf2d vSprScale = olc::vf2d(m_iMoveDir, 1.0f);
     int iSprIndex;
-    std::cout << vSprSourcePos / m_vSpriteSize << std::endl;
     if (m_iState == JUMP_LEFT || m_iState == JUMP_RIGHT)
     {
         iSprIndex = 2;

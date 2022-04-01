@@ -68,7 +68,7 @@ class Catacombs : public olc::PixelGameEngine
 
             MovePlayer(fElapsedTime);
             HandlePanAndZoom();
-            UpdateEntities();
+            UpdateEntities(fElapsedTime);
             CheckForEntityCollisions();
             Render();
             if (cPlayer.bDebug)
@@ -83,7 +83,7 @@ class Catacombs : public olc::PixelGameEngine
         /*************************************************/
         /*                Update Entities                */
         /*************************************************/
-        void UpdateEntities()
+        void UpdateEntities(float fElapsedTime)
         {
             cPlayer.Update();
             cTickCounterEntity.Update();
@@ -94,6 +94,9 @@ class Catacombs : public olc::PixelGameEngine
                 for (int i = 0; i < vEnemies.size(); i++)
                 {
                     vEnemies[i]->Update(cPlayer.GetPos());
+                    posvel_t pvNewPosVel = ResolveMapCollisions(vEnemies[i]->GetPos(), vEnemies[i]->GetVel(), fElapsedTime);
+                    vEnemies[i]->SetPos(pvNewPosVel.pos);
+                    vEnemies[i]->SetVel(pvNewPosVel.vel);
                 }
 
                 for (int i = 0; i < vLoot.size(); i++)

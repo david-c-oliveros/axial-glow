@@ -20,23 +20,26 @@ void World::GenerateWorld()
 
     m_pBGSprite  = std::make_unique<olc::Renderable>();
     m_pBGSprite->Load("./res/sprites/map/green-zone-tileset/2 Background/Day/Background.png");
-    std::string sFilename = "maps/world_map_13.txt";
+    std::string sFilename = "maps/world_map_36.txt";
     LoadMapFromFile(sFilename);
 }
 
 
 void World::LoadMapFromFile(std::string filename)
 {
-    vSize = { 128, 24 };
+    vSize = { 24, 24 };
     std::ifstream mapfile;
     mapfile.open(filename);
     std::string str;
     int i = 0;
     while(mapfile >> str)
     {
+        if (i == 0)
+            vSize.x = str.length();
         sMap += str;
         i++;
     }
+    std::cout << i << std::endl;
 }
 
 
@@ -98,6 +101,8 @@ void World::DrawMap(olc::PixelGameEngine* pge, olc::TileTransformedView* tv)
                 case('+'):
                     tv->DrawPartialDecal(vTile, m_vMapSprites[2]->Decal(), { 0.0f, 0.0f }, { 16.0f, 16.0f }, { 2.1f, 2.1f });
                     break;
+                default:
+                    continue;
             }
         }
     }
